@@ -2,11 +2,24 @@ using UnityEngine;
 
 public class Enemy : MonoBehaviour
 {
-    public float speed = 10f;
+    private static Enemy instance = null;
 
+    public float speed = 10f;
     private Transform target;
+    public Vector3 basicPosition;
     private int wavepointIndex = 0;
-    private Vector3 basicPosition;
+
+    public static Enemy Instance
+    {
+        get
+        {
+            if(instance == null)
+            {
+                instance = new Enemy();
+            }
+            return instance;
+        }
+    }
 
     private void Start()
     {
@@ -27,7 +40,7 @@ public class Enemy : MonoBehaviour
 
     void GetNextWayPoint()
     {
-        if(wavepointIndex >= Waypoints.points.Length - 1)
+        if (wavepointIndex >= Waypoints.points.Length - 1)
         {
             ObjectPoolManager.Instance.ReturnObjectToPool(gameObject);
 
@@ -35,11 +48,19 @@ public class Enemy : MonoBehaviour
             //wavepointIndex = 0;
             //target = Waypoints.points[wavepointIndex];
             //gameObject.transform.position = basicPosition;
-            
+
             return;
         }
 
         wavepointIndex++;
         target = Waypoints.points[wavepointIndex];
+    }
+
+    public void SpawnEnemy()
+    {
+        ObjectPoolManager.Instance.GetObjectFromPool();
+        wavepointIndex = 0;
+        target = Waypoints.points[wavepointIndex];
+        gameObject.transform.position = basicPosition;
     }
 }

@@ -32,14 +32,14 @@ public class WaveSpawner : MonoBehaviour
     {
         for (int i = 0; i < waveNumber; i++)
         {
-            SpawnEnemy();
+            Enemy.Instance.SpawnEnemy();
             yield return new WaitForSeconds(0.5f);
         }
         waveNumber++;
     }
 
-    void SpawnEnemy()
-    {
-        Instantiate(enemyPrefab, spawnPoint.position, spawnPoint.rotation);
-    }
+    //void SpawnEnemy()
+    //{
+    //    Instantiate(enemyPrefab, spawnPoint.position, spawnPoint.rotation);
+    //}
 }
