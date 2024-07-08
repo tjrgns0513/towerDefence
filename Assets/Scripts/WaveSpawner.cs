@@ -30,12 +30,14 @@ public class WaveSpawner : MonoBehaviour
 
     IEnumerator SpawnWave()
     {
+        waveNumber++;
+
         for (int i = 0; i < waveNumber; i++)
         {
-            Enemy.Instance.SpawnEnemy();
+            Enemy.SpawnEnemy();
             yield return new WaitForSeconds(0.5f);
         }
-        waveNumber++;
+
     }
 
     //void SpawnEnemy()

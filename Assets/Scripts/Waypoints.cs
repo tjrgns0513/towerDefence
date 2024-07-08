@@ -5,22 +5,21 @@ using static UnityEngine.GraphicsBuffer;
 public class Waypoints : MonoBehaviour
 {
     private static Waypoints instance = null;
-    public static Transform[] points { get; private set; }
+    public Transform[] points { get; private set; }
 
     public static Waypoints Instance
     {
         get
         {
-            if (instance == null)
-            {
-                instance = new Waypoints();
-            }
             return instance;
         }
     }
 
     private void Awake()
     {
+        instance = this;
+
+
         points = new Transform[transform.childCount];
 
         for (int i = 0; i < points.Length; i++)
