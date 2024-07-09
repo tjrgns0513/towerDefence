@@ -1,11 +1,10 @@
 using System.Linq.Expressions;
 using UnityEngine;
-using static UnityEngine.GraphicsBuffer;
 
 public class Waypoints : MonoBehaviour
 {
     private static Waypoints instance = null;
-    public Transform[] points { get; private set; }
+    public Transform[] Points { get; private set; }
 
     public static Waypoints Instance
     {
@@ -20,11 +19,11 @@ public class Waypoints : MonoBehaviour
         instance = this;
 
 
-        points = new Transform[transform.childCount];
+        Points = new Transform[transform.childCount];
 
-        for (int i = 0; i < points.Length; i++)
+        for (int i = 0; i < Points.Length; i++)
         {
-            points[i] = transform.GetChild(i);
+            Points[i] = transform.GetChild(i);
         }
     }
 }
