@@ -1,3 +1,4 @@
+using System.Runtime.InteropServices;
 using UnityEngine;
 
 public class Bullet : MonoBehaviour
@@ -39,8 +40,8 @@ public class Bullet : MonoBehaviour
 
         Destroy(effectIns, 2f);
 
-       //ObjectPoolManager.Instance.ReturnObjectToPool(target);
-
+        ObjectPoolManager.Instance.ReturnObjectToPool(target.gameObject);
+        
         Destroy(gameObject);
     }
 }
