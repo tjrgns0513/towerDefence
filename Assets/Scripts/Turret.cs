@@ -20,6 +20,7 @@ public class Turret : MonoBehaviour
 
     void Start()
     {
+        fireCountdown = 1f / fireRate;
         InvokeRepeating("UpdateTarget", 0f, 0.5f);
     }
 
@@ -71,10 +72,13 @@ public class Turret : MonoBehaviour
 
     void Shoot()
     {
-        GameObject bulletGO = (GameObject)Instantiate(bulletPrefab, firePoint.position, firePoint.rotation);
+        GameObject bulletGO = ObjectPoolManager.Instance.GetObjectFromPool("Bullet");
+        bulletGO.transform.position = firePoint.position;
+        bulletGO.transform.rotation = firePoint.rotation;
+
         Bullet bullet = bulletGO.GetComponent<Bullet>();
 
-        if(bullet != null)
+        if (bullet != null)
         {
             bullet.Seek(target);
         }

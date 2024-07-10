@@ -6,6 +6,7 @@ public class Enemy : MonoBehaviour
     public Transform target;       //이동할 타켓 위치
     public Vector3 basicPosition;   //기본 시작 위치
     public int wavepointIndex = 0;
+    public int ID { get; private set; }
 
     private void Start()
     {
@@ -29,11 +30,16 @@ public class Enemy : MonoBehaviour
     {
         if (wavepointIndex >= Waypoints.Instance.Points.Length - 1)
         {
-            ObjectPoolManager.Instance.ReturnObjectToPool(gameObject);
+            ObjectPoolManager.Instance.ReturnObjectToPool(gameObject, "Enemy");
             return;
         }
 
         wavepointIndex++;
         target = Waypoints.Instance.Points[wavepointIndex];
+    }
+
+    public void SetID(int id)
+    {
+        ID = id;
     }
 }

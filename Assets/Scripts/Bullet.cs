@@ -1,24 +1,28 @@
-using System.Runtime.InteropServices;
+using System.Collections;
 using UnityEngine;
 
 public class Bullet : MonoBehaviour
 {
     private Transform target;
-
+    Enemy enemyTarget;
     public float speed = 70f;
-    public GameObject impactEffect;
+    private int enemyIndex = -1;
+
+    private void Start()
+    {
+        enemyTarget = target.GetComponent<Enemy>();
+    }
 
     public void Seek(Transform _target)
     {
         target = _target;
     }
 
-    
     void Update()
     {
-        if (target == null)
+        if (target == null || target.gameObject == null)
         {
-            Destroy(gameObject);
+            ObjectPoolManager.Instance.ReturnObjectToPool(gameObject, "Bullet");
             return;
         }
 
@@ -36,12 +40,28 @@ public class Bullet : MonoBehaviour
 
     void HitTarget()
     {
-        GameObject effectIns = Instantiate(impactEffect, transform.position, transform.rotation);
+        GameObject effectIns = ObjectPoolManager.Instance.GetObjectFromPool("ImpactEffect");
+        BulletImpactEffect impactEffect = effectIns.GetComponent<BulletImpactEffect>();
 
-        Destroy(effectIns, 2f);
+        impactEffect.HitBulletImpactEffect();
 
-        ObjectPoolManager.Instance.ReturnObjectToPool(target.gameObject);
-        
-        Destroy(gameObject);
+        effectIns.transform.position = transform.position;
+        effectIns.transform.rotation = transform.rotation;
+
+        if (target != null)
+        {
+            Debug.Log("Index : " + enemyIndex + "  ID : " + enemyTarget.ID);
+            if (enemyIndex == enemyTarget.ID)
+            {
+                ObjectPoolManager.Instance.ReturnObjectToPool(gameObject, "Bullet");
+                return;
+            }
+
+            enemyIndex = enemyTarget.ID;
+
+            ObjectPoolManager.Instance.ReturnObjectToPool(target.gameObject, "Enemy");
+        }
+
+        ObjectPoolManager.Instance.ReturnObjectToPool(gameObject, "Bullet");
     }
 }

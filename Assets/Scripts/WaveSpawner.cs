@@ -38,11 +38,14 @@ public class WaveSpawner : MonoBehaviour
 
     void SpawnEnemy()
     {
-        var enemyObject = ObjectPoolManager.Instance.GetObjectFromPool();
+        var enemyObject = ObjectPoolManager.Instance.GetObjectFromPool("Enemy");
+
         Enemy enemy = enemyObject.GetComponent<Enemy>();
 
         enemy.wavepointIndex = 0;
         enemy.target = Waypoints.Instance.Points[enemy.wavepointIndex];
         enemy.transform.position = enemy.basicPosition;
+
+        enemyObject.SetActive(true);
     }
 }
