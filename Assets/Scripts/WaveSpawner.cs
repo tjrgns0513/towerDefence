@@ -39,7 +39,7 @@ public class WaveSpawner : MonoBehaviour
 
     void SpawnEnemy()
     {
-        var enemyObject = ObjectPoolManager.Instance.GetObjectFromPool(PoolObjectType.Enemy);
+        var enemyObject = ObjectPoolManager.Instance.GetObjectFromPool(ObjectPoolManager.PoolObjectType.Enemy);
 
         Enemy enemy = enemyObject.GetComponent<Enemy>();
 

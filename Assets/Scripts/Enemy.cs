@@ -34,7 +34,7 @@ public class Enemy : MonoBehaviour
     {
         if (wavepointIndex >= Waypoints.Instance.Points.Length - 1)
         {
-            ObjectPoolManager.Instance.ReturnObjectToPool(gameObject, PoolObjectType.Enemy);
+            ObjectPoolManager.Instance.ReturnObjectToPool(gameObject, ObjectPoolManager.PoolObjectType.Enemy);
             return;
         }
 
@@ -42,10 +42,19 @@ public class Enemy : MonoBehaviour
         target = Waypoints.Instance.Points[wavepointIndex];
     }
 
+    public void TakeDamage()
+    {
+        if (!isDead)
+        {
+            Die();
+        }
+    }
+
     public void Die()
     {
+        Debug.Log("2222222");
         isDead = true;
-        ObjectPoolManager.Instance.ReturnObjectToPool(gameObject, PoolObjectType.Enemy);
+        ObjectPoolManager.Instance.ReturnObjectToPool(gameObject, ObjectPoolManager.PoolObjectType.Enemy);
     }
 
     public void SetID(int id)

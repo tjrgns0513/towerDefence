@@ -73,7 +73,7 @@ public class Turret : MonoBehaviour
 
     void Shoot()
     {
-        GameObject bulletGO = ObjectPoolManager.Instance.GetObjectFromPool(PoolObjectType.Bullet);
+        GameObject bulletGO = ObjectPoolManager.Instance.GetObjectFromPool(ObjectPoolManager.PoolObjectType.Bullet);
         bulletGO.transform.position = firePoint.position;
         bulletGO.transform.rotation = firePoint.rotation;
 

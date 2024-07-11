@@ -12,7 +12,7 @@ public class BulletImpactEffect : MonoBehaviour
     {
         if(!impactEffectObj.GetComponent<ParticleSystem>().IsAlive())
         {
-            ObjectPoolManager.Instance.ReturnObjectToPool(impactEffectObj, PoolObjectType.ImpactEffect);
+            ObjectPoolManager.Instance.ReturnObjectToPool(impactEffectObj, ObjectPoolManager.PoolObjectType.ImpactEffect);
         }
     }
 }

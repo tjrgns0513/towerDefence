@@ -24,7 +24,7 @@ public class Bullet : MonoBehaviour
     {
         if (targetTr == null || targetTr.gameObject == null)
         {
-            ObjectPoolManager.Instance.ReturnObjectToPool(gameObject, PoolObjectType.Bullet);
+            ObjectPoolManager.Instance.ReturnObjectToPool(gameObject, ObjectPoolManager.PoolObjectType.Bullet);
             return;
         }
 
@@ -44,20 +44,26 @@ public class Bullet : MonoBehaviour
     void HitTarget()
     {
         //impactEffect 파티클위치에 총알위치를 받아서 실행
-        GameObject effectObj = ObjectPoolManager.Instance.GetObjectFromPool(PoolObjectType.ImpactEffect);
+        GameObject effectObj = ObjectPoolManager.Instance.GetObjectFromPool(ObjectPoolManager.PoolObjectType.ImpactEffect);
         BulletImpactEffect impactEffect = effectObj.GetComponent<BulletImpactEffect>();
         effectObj.transform.position = transform.position;
         effectObj.transform.rotation = transform.rotation;
 
-        if (enemyId == enemyTarget.ID)
+        if (targetTr != null)
         {
-            ObjectPoolManager.Instance.ReturnObjectToPool(gameObject, PoolObjectType.Bullet);
-            return;
+            Debug.Log("111111");
+            enemyTarget.TakeDamage();
         }
 
-        enemyId = enemyTarget.ID;
-        enemyTarget.Die();
+        //if (enemyId == enemyTarget.ID)
+        //{
+        //    ObjectPoolManager.Instance.ReturnObjectToPool(gameObject, PoolObjectType.Bullet);
+        //    return;
+        //}
+
+        //enemyId = enemyTarget.ID;
+        //enemyTarget.Die();
  
-        ObjectPoolManager.Instance.ReturnObjectToPool(gameObject, PoolObjectType.Bullet);
+        ObjectPoolManager.Instance.ReturnObjectToPool(gameObject, ObjectPoolManager.PoolObjectType.Bullet);
     }
 }
