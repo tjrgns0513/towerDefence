@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using static ObjectPoolManager;
 
 public class Turret : MonoBehaviour
 {
@@ -72,7 +73,7 @@ public class Turret : MonoBehaviour
 
     void Shoot()
     {
-        GameObject bulletGO = ObjectPoolManager.Instance.GetObjectFromPool("Bullet");
+        GameObject bulletGO = ObjectPoolManager.Instance.GetObjectFromPool(PoolObjectType.Bullet);
         bulletGO.transform.position = firePoint.position;
         bulletGO.transform.rotation = firePoint.rotation;
 

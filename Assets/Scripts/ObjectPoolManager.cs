@@ -1,10 +1,18 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 public class ObjectPoolManager : MonoBehaviour
 {
     public static ObjectPoolManager Instance { get; private set; }
+
+    public enum PoolObjectType
+    {
+        Enemy,
+        Bullet,
+        ImpactEffect
+    }
 
     [SerializeField] private GameObject enemyPrefab;
     [SerializeField] private GameObject bulletPrefab;
@@ -15,9 +23,14 @@ public class ObjectPoolManager : MonoBehaviour
     public Transform bulletsParent;
     public Transform impactEffectsParent;
 
-    private Queue<GameObject> enemyPool = new Queue<GameObject>();
-    private Queue<GameObject> bulletPool = new Queue<GameObject>();
-    private Queue<GameObject> impactEffectPool = new Queue<GameObject>();
+    private struct ObjectPool
+    {
+        public Queue<GameObject> Pool { get; set; }
+        public GameObject Prefab { get; set; }
+        public Transform Parent { get; set; }
+    }
+
+    private Dictionary<PoolObjectType, ObjectPool> objectPools = new Dictionary<PoolObjectType, ObjectPool>();
 
     private int enemyIDCounter = 0;
 
@@ -29,73 +42,63 @@ public class ObjectPoolManager : MonoBehaviour
             return;
         }
         Instance = this;
-        InitializePool();
+
+        // 프리팹과 부모를 Dictionary에 매핑하여 풀 초기화
+        InitializePool(PoolObjectType.Enemy, enemyPrefab, enemyParent);
+        InitializePool(PoolObjectType.Bullet, bulletPrefab, bulletsParent);
+        InitializePool(PoolObjectType.ImpactEffect, impactEffectPrefab, impactEffectsParent);
     }
 
-    private void InitializePool()
+    private void InitializePool(PoolObjectType objType, GameObject prefab, Transform parent)
     {
+        Queue<GameObject> objectPool = new Queue<GameObject>();
+
         for (int i = 0; i < poolSize; i++)
         {
-            GameObject enemyObj = Instantiate(enemyPrefab);
-            enemyObj.SetActive(false);
-            enemyObj.transform.SetParent(enemyParent);
-            enemyPool.Enqueue(enemyObj);
-
-            GameObject bulletObj = Instantiate(bulletPrefab);
-            bulletObj.SetActive(false);
-            bulletObj.transform.SetParent(bulletsParent);
-            bulletPool.Enqueue(bulletObj);
-
-            GameObject impactEffectObj = Instantiate(impactEffectPrefab);
-            impactEffectObj.SetActive(false);
-            impactEffectObj.transform.SetParent(impactEffectsParent);
-            impactEffectPool.Enqueue(impactEffectObj);
+            GameObject obj = Instantiate(prefab);
+            obj.SetActive(false);
+            obj.transform.SetParent(parent);
+            objectPool.Enqueue(obj);
         }
+
+        objectPools[objType] = new ObjectPool
+        {
+            Pool = objectPool,
+            Prefab = prefab,
+            Parent = parent
+        };
     }
 
-    public GameObject GetObjectFromPool(string objType)
+    public GameObject GetObjectFromPool(PoolObjectType objType)
     {
-        Queue<GameObject> selectedPool = null;
-        GameObject prefab = null;
-        Transform parent = null;
-
-        switch (objType)
+        if (!objectPools.ContainsKey(objType))
         {
-            case "Enemy":
-                selectedPool = enemyPool;
-                prefab = enemyPrefab;
-                parent = enemyParent;
-                break;
-            case "Bullet":
-                selectedPool = bulletPool;
-                prefab = bulletPrefab;
-                parent = bulletsParent;
-                break;
-            case "ImpactEffect":
-                selectedPool = impactEffectPool;
-                prefab = impactEffectPrefab;
-                parent = impactEffectsParent;
-                break;
+            Debug.LogWarning($"Object type {objType} not found in pool");
+            return null;
         }
 
+        ObjectPool selectedPool = objectPools[objType];
         GameObject obj;
 
-        if (selectedPool.Count > 0)
+        if (selectedPool.Pool.Count > 0)
         {
-            obj = selectedPool.Dequeue();
+            obj = selectedPool.Pool.Dequeue();
         }
         else
         {
-            obj = Instantiate(prefab);
-            obj.transform.SetParent(parent);
+            // Prefab을 찾아서 새로 인스턴스화
+            obj = Instantiate(selectedPool.Prefab);
+            obj.transform.SetParent(selectedPool.Parent);
         }
 
-        if (objType == "Enemy")
+        // 적 오브젝트에 새로운 ID 부여
+        if (objType == PoolObjectType.Enemy)
         {
             Enemy enemy = obj.GetComponent<Enemy>();
             if (enemy != null)
             {
                 enemy.SetID(enemyIDCounter++);
+                enemy.isDead = false;
             }
         }
 
@@ -103,24 +106,15 @@ public class ObjectPoolManager : MonoBehaviour
         return obj;
     }
 
-    public void ReturnObjectToPool(GameObject obj, string objType)
+    public void ReturnObjectToPool(GameObject obj, PoolObjectType objType)
     {
-        obj.SetActive(false);
-        Queue<GameObject> selectedPool = null;
-
-        switch (objType)
+        if (!objectPools.ContainsKey(objType))
         {
-            case "Enemy":
-                selectedPool = enemyPool;
-                break;
-            case "Bullet":
-                selectedPool = bulletPool;
-                break;
-            case "ImpactEffect":
-                selectedPool = impactEffectPool;
-                break;
+            Debug.LogWarning($"Object type {objType} not found in pool");
+            return;
         }
 
-        selectedPool.Enqueue(obj);
+        obj.SetActive(false);
+        objectPools[objType].Pool.Enqueue(obj);
     }
 }

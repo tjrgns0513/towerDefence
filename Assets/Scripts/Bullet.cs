@@ -1,32 +1,34 @@
 using System.Collections;
 using UnityEngine;
+using static ObjectPoolManager;
+using static UnityEngine.GraphicsBuffer;
 
 public class Bullet : MonoBehaviour
 {
-    private Transform target;
+    private Transform targetTr;
     Enemy enemyTarget;
     public float speed = 70f;
-    private int enemyIndex = -1;
+    private int enemyId = -1;
 
     private void Start()
     {
-        enemyTarget = target.GetComponent<Enemy>();
+        enemyTarget = targetTr.GetComponent<Enemy>();
     }
 
     public void Seek(Transform _target)
     {
-        target = _target;
+        targetTr = _target;
     }
 
     void Update()
     {
-        if (target == null || target.gameObject == null)
+        if (targetTr == null || targetTr.gameObject == null)
         {
-            ObjectPoolManager.Instance.ReturnObjectToPool(gameObject, "Bullet");
+            ObjectPoolManager.Instance.ReturnObjectToPool(gameObject, PoolObjectType.Bullet);
             return;
         }
 
-        Vector3 dir = target.position - transform.position;
+        Vector3 dir = targetTr.position - transform.position;
         float distanceThisFrame = speed * Time.deltaTime;
 
         if (dir.magnitude <= distanceThisFrame)
@@ -38,30 +40,24 @@ public class Bullet : MonoBehaviour
         transform.Translate(dir.normalized * distanceThisFrame, Space.World);
     }
 
+    //총알이 타겟에 맞았을때
     void HitTarget()
     {
-        GameObject effectIns = ObjectPoolManager.Instance.GetObjectFromPool("ImpactEffect");
-        BulletImpactEffect impactEffect = effectIns.GetComponent<BulletImpactEffect>();
+        //impactEffect 파티클위치에 총알위치를 받아서 실행
+        GameObject effectObj = ObjectPoolManager.Instance.GetObjectFromPool(PoolObjectType.ImpactEffect);
+        BulletImpactEffect impactEffect = effectObj.GetComponent<BulletImpactEffect>();
+        effectObj.transform.position = transform.position;
+        effectObj.transform.rotation = transform.rotation;
 
-        impactEffect.HitBulletImpactEffect();
-
-        effectIns.transform.position = transform.position;
-        effectIns.transform.rotation = transform.rotation;
-
-        if (target != null)
+        if (enemyId == enemyTarget.ID)
         {
-            Debug.Log("Index : " + enemyIndex + "  ID : " + enemyTarget.ID);
-            if (enemyIndex == enemyTarget.ID)
-            {
-                ObjectPoolManager.Instance.ReturnObjectToPool(gameObject, "Bullet");
-                return;
-            }
-
-            enemyIndex = enemyTarget.ID;
-
-            ObjectPoolManager.Instance.ReturnObjectToPool(target.gameObject, "Enemy");
+            ObjectPoolManager.Instance.ReturnObjectToPool(gameObject, PoolObjectType.Bullet);
+            return;
         }
 
-        ObjectPoolManager.Instance.ReturnObjectToPool(gameObject, "Bullet");
+        enemyId = enemyTarget.ID;
+        enemyTarget.Die();
+ 
+        ObjectPoolManager.Instance.ReturnObjectToPool(gameObject, PoolObjectType.Bullet);
     }
 }

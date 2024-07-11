@@ -1,18 +1,18 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
+using static ObjectPoolManager;
 
 public class BulletImpactEffect : MonoBehaviour
 {
-    public GameObject impactEffect;
+    public GameObject impactEffectObj;
 
-    public void HitBulletImpactEffect()
+    private void Update()
     {
-        StartCoroutine("ReturnImpactEffectToPool");
-    }
-    IEnumerator ReturnImpactEffectToPool()
-    {
-        yield return new WaitForSeconds(2f);
-        ObjectPoolManager.Instance.ReturnObjectToPool(impactEffect, "ImpactEffect");
+        if(!impactEffectObj.GetComponent<ParticleSystem>().IsAlive())
+        {
+            ObjectPoolManager.Instance.ReturnObjectToPool(impactEffectObj, PoolObjectType.ImpactEffect);
+        }
     }
 }

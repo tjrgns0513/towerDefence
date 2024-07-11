@@ -1,4 +1,7 @@
+using System.Collections.Generic;
 using UnityEngine;
+using static ObjectPoolManager;
+using static UnityEngine.GraphicsBuffer;
 
 public class Enemy : MonoBehaviour
 {
@@ -7,6 +10,7 @@ public class Enemy : MonoBehaviour
     public Vector3 basicPosition;   //기본 시작 위치
     public int wavepointIndex = 0;
     public int ID { get; private set; }
+    public bool isDead = false;
 
     private void Start()
     {
@@ -30,12 +34,18 @@ public class Enemy : MonoBehaviour
     {
         if (wavepointIndex >= Waypoints.Instance.Points.Length - 1)
         {
-            ObjectPoolManager.Instance.ReturnObjectToPool(gameObject, "Enemy");
+            ObjectPoolManager.Instance.ReturnObjectToPool(gameObject, PoolObjectType.Enemy);
             return;
         }
 
         wavepointIndex++;
         target = Waypoints.Instance.Points[wavepointIndex];
+    }
+
+    public void Die()
+    {
+        isDead = true;
+        ObjectPoolManager.Instance.ReturnObjectToPool(gameObject, PoolObjectType.Enemy);
     }
 
     public void SetID(int id)
