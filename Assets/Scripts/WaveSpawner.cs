@@ -11,7 +11,7 @@ public class WaveSpawner : MonoBehaviour
     public Transform enemyPrefab;
     public Transform spawnPoint;
 
-    public float timeBetweenWaves = 5f;
+    public int timeBetweenWaves = 3;
 
     public Text waveCountdownText;
     public Text waveNumberText;
@@ -54,13 +54,13 @@ public class WaveSpawner : MonoBehaviour
         for (int i = 0; i < waveNumber; i++)
         {
             SpawnEnemy();
-            yield return new WaitForSeconds(0.5f);
+            yield return new WaitForSeconds(0.2f);
         }
     }
 
     IEnumerator TimeCountDown()
     {
-        for(int i = 3; i >= 0; i--)
+        for(int i = timeBetweenWaves; i >= 0; i--)
         {
             waveCountdownText.text = i.ToString();
             yield return new WaitForSeconds(1f);
