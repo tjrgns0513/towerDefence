@@ -38,11 +38,10 @@ public class PlayerManager : MonoBehaviour
         {
             GameOver();
         }
-
-        Debug.Log("life : " + playerLife);
     }
     public void GameOver()
     {
         Debug.Log("Game Over !!!");
+        GameManager.Instance.GameOver();
     }
 }

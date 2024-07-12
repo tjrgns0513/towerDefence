@@ -60,7 +60,7 @@ public class WaveSpawner : MonoBehaviour
 
     IEnumerator TimeCountDown()
     {
-        for(int i = 5; i >= 0; i--)
+        for(int i = 3; i >= 0; i--)
         {
             waveCountdownText.text = i.ToString();
             yield return new WaitForSeconds(1f);
@@ -97,7 +97,5 @@ public class WaveSpawner : MonoBehaviour
         {
             isStart = true;
         }
-
-        Debug.Log("Enemy died. Enemies left: " + enemyAlive);
     }
 }
