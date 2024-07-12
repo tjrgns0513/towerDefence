@@ -11,17 +11,20 @@ public class ObjectPoolManager : MonoBehaviour
     {
         Enemy,
         Bullet,
-        ImpactEffect
+        ImpactEffect,
+        EnemyDeathEffect,
     }
 
     [SerializeField] private GameObject enemyPrefab;
     [SerializeField] private GameObject bulletPrefab;
     [SerializeField] private GameObject impactEffectPrefab;
+    [SerializeField] private GameObject enemyDeathEffectPrefab;
     [SerializeField] private int poolSize = 10;
 
     public Transform enemyParent;
     public Transform bulletsParent;
     public Transform impactEffectsParent;
+    public Transform enemyDeathEffectsParent;
 
     private struct ObjectPool
     {
@@ -47,6 +50,7 @@ public class ObjectPoolManager : MonoBehaviour
         InitializePool(PoolObjectType.Enemy, enemyPrefab, enemyParent);
         InitializePool(PoolObjectType.Bullet, bulletPrefab, bulletsParent);
         InitializePool(PoolObjectType.ImpactEffect, impactEffectPrefab, impactEffectsParent);
+        InitializePool(PoolObjectType.EnemyDeathEffect, enemyDeathEffectPrefab, enemyDeathEffectsParent);
     }
 
     private void InitializePool(PoolObjectType objType, GameObject prefab, Transform parent)

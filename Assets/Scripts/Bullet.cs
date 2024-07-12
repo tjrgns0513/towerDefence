@@ -8,6 +8,7 @@ public class Bullet : MonoBehaviour
     public Transform targetTr;
     Enemy enemyTarget;
     public float speed = 30f;
+    public int damage = 20;
 
 
     public void Init(Transform target)
@@ -62,13 +63,13 @@ public class Bullet : MonoBehaviour
     {
         //impactEffect 파티클위치에 총알위치를 받아서 실행
         GameObject effectObj = ObjectPoolManager.Instance.GetObjectFromPool(ObjectPoolManager.PoolObjectType.ImpactEffect);
-        BulletImpactEffect impactEffect = effectObj.GetComponent<BulletImpactEffect>();
+        EffectManager impactEffect = effectObj.GetComponent<EffectManager>();
         effectObj.transform.position = transform.position;
         effectObj.transform.rotation = transform.rotation;
 
         if(!target.isDead)
         {
-            target.Die();
+            target.TakeDamage(damage);
         }
 
         ObjectPoolManager.Instance.ReturnObjectToPool(gameObject, ObjectPoolManager.PoolObjectType.Bullet);

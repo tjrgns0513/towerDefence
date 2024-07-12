@@ -2729,10 +2729,12 @@ MonoBehaviour:
   enemyPrefab: {fileID: 93446652494894425, guid: 067e70dd206d3a94b9c5c8a9cd3f0c07, type: 3}
   bulletPrefab: {fileID: 8240462468343653783, guid: d09de8eb79575ab489362184110f2d56, type: 3}
   impactEffectPrefab: {fileID: 2847633783028070284, guid: 8c85dddf2c376d346a0ea143458b4681, type: 3}
+  enemyDeathEffectPrefab: {fileID: 5998822838623174904, guid: 3d092a402856bda40b27390a44905529, type: 3}
   poolSize: 5
   enemyParent: {fileID: 1641676001}
   bulletsParent: {fileID: 989841427}
   impactEffectsParent: {fileID: 1972809082}
+  enemyDeathEffectsParent: {fileID: 839804313}
 --- !u!4 &279820858
 Transform:
   m_ObjectHideFlags: 0
@@ -4000,6 +4002,7 @@ GameObject:
   - component: {fileID: 366697534}
   - component: {fileID: 366697535}
   - component: {fileID: 366697536}
+  - component: {fileID: 366697537}
   m_Layer: 0
   m_Name: GameMaster
   m_TagString: Untagged
@@ -4094,6 +4097,20 @@ MonoBehaviour:
   gameOverUI: {fileID: 1785548434}
   gameObjectsToDisable:
   - {fileID: 1999067648}
+--- !u!114 &366697537
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 366697530}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5e8c41556cea5934cb4b69514030b9bc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  impactEffectObj: {fileID: 2847633783028070284, guid: 8c85dddf2c376d346a0ea143458b4681, type: 3}
+  enemyDeathEffectObj: {fileID: 5998822838623174904, guid: 3d092a402856bda40b27390a44905529, type: 3}
 --- !u!1001 &376473958
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -7835,6 +7852,37 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 828995331}
   m_CullTransparentMesh: 1
+--- !u!1 &839804312
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 839804313}
+  m_Layer: 0
+  m_Name: EnemyEffectsParent
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &839804313
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 839804312}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &850234991
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -8903,7 +8951,7 @@ Camera:
   far clip plane: 1000
   field of view: 60
   orthographic: 0
-  orthographic size: 5
+  orthographic size: 50
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -8941,7 +8989,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 963194225}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 434b0944ca613374688076ddcf4ecb13, type: 3}
   m_Name: 
@@ -17078,3 +17126,4 @@ SceneRoots:
   - {fileID: 989841427}
   - {fileID: 1641676001}
   - {fileID: 1972809082}
+  - {fileID: 839804313}

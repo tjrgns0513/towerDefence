@@ -84,8 +84,9 @@ public class WaveSpawner : MonoBehaviour
         enemy.wavepointIndex = 0;
         enemy.target = Waypoints.Instance.Points[enemy.wavepointIndex];
         enemy.transform.position = enemy.basicPosition;
-        enemy.speed = waveNumber + 20;
-
+        enemy.currentHealth = enemy.maxHealth + waveNumber;
+        enemy.speed = 10 + waveNumber;
+        enemy.UpdateHealthBar();
         enemyObject.SetActive(true);
     }
 

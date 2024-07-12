@@ -7,7 +7,7 @@ public class RewardManager : MonoBehaviour
 {
     private static RewardManager instance = null;
     public Text goldText;
-    private int gold = 50;
+    private int gold = 100;
 
     public static RewardManager Instance
     {

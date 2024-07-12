@@ -1,8 +1,7 @@
 using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
-using static ObjectPoolManager;
-using static UnityEngine.GraphicsBuffer;
+using UnityEngine.UI;
 
 public class Enemy : MonoBehaviour
 {
@@ -13,11 +12,21 @@ public class Enemy : MonoBehaviour
     public int ID { get; private set; }
     public bool isDead = false;
 
+    public GameObject deathEffect;
+
+    public int maxHealth = 100;
+    public int currentHealth;
+    public Canvas healthBarCanvas;
+    public Slider healthBarSlider;
+
     private void Start()
     {
         target = Waypoints.Instance.Points[0];
         basicPosition = new Vector3(0f, 2f, 0f);
         transform.position = basicPosition;
+        currentHealth = maxHealth;
+ 
+        UpdateHealthBar();
     }
 
     private void Update()
@@ -45,8 +54,34 @@ public class Enemy : MonoBehaviour
         target = Waypoints.Instance.Points[wavepointIndex];
     }
 
+    public void TakeDamage(int amount)
+    {
+        currentHealth -= amount;
+
+        Debug.Log("currentHealth : " + currentHealth);
+
+        if (currentHealth <= 0 && !isDead)
+        {
+            Die();
+        }
+        UpdateHealthBar();
+    }
+
+    public void UpdateHealthBar()
+    {
+        if (healthBarSlider != null)
+        {
+            healthBarSlider.value = (float)currentHealth / maxHealth;
+        }
+    }
+
     public void Die()
     {
+        GameObject effectObj = ObjectPoolManager.Instance.GetObjectFromPool(ObjectPoolManager.PoolObjectType.EnemyDeathEffect);
+        EffectManager impactEffect = effectObj.GetComponent<EffectManager>();
+        effectObj.transform.position = transform.position;
+        effectObj.transform.rotation = transform.rotation;
+
         isDead = true;
 
         WaveSpawner.Instance.EnemyDeathCount();
