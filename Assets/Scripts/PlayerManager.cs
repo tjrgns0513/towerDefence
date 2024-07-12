@@ -36,12 +36,11 @@ public class PlayerManager : MonoBehaviour
 
         if (playerLife == 0)
         {
-            GameOver();
+            PlayerDie();
         }
     }
-    public void GameOver()
+    public void PlayerDie()
     {
-        Debug.Log("Game Over !!!");
         GameManager.Instance.GameOver();
     }
 }
