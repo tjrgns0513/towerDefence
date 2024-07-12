@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 using static ObjectPoolManager;
 using static UnityEngine.GraphicsBuffer;
@@ -34,6 +35,8 @@ public class Enemy : MonoBehaviour
     {
         if (wavepointIndex >= Waypoints.Instance.Points.Length - 1)
         {
+            WaveSpawner.Instance.EnemyDeathCount();
+            PlayerManager.Instance.PlayerLife(1);
             ObjectPoolManager.Instance.ReturnObjectToPool(gameObject, ObjectPoolManager.PoolObjectType.Enemy);
             return;
         }
@@ -42,19 +45,13 @@ public class Enemy : MonoBehaviour
         target = Waypoints.Instance.Points[wavepointIndex];
     }
 
-    public void TakeDamage()
-    {
-        if (!isDead)
-        {
-            Die();
-        }
-    }
-
     public void Die()
     {
-        Debug.Log("2222222");
         isDead = true;
+
+        WaveSpawner.Instance.EnemyDeathCount();
         ObjectPoolManager.Instance.ReturnObjectToPool(gameObject, ObjectPoolManager.PoolObjectType.Enemy);
+        RewardManager.Instance.AddGold(10);
     }
 
     public void SetID(int id)

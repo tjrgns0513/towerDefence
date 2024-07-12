@@ -26,6 +26,14 @@ public class Node : MonoBehaviour
             return;
         }
 
+        if(RewardManager.Instance.GetGold() < 50)
+        {
+            Debug.Log("Don't have money");
+            return;
+        }
+
+        RewardManager.Instance.SubtractGold(50);
+
         GameObject turretToBuild = BuildManager.Instance.GetTurretToBuild();
         turret = (GameObject)Instantiate(turretToBuild, transform.position + positionOffset, transform.rotation);
     }

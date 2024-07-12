@@ -30,7 +30,6 @@ public class Turret : MonoBehaviour
         GameObject[] enemies = GameObject.FindGameObjectsWithTag(enemyTag);
         float shortestDistnace = Mathf.Infinity;
         GameObject nearestEnemy = null;
-
         foreach (GameObject enemy in enemies)
         {
             float distanceToEnemy = Vector3.Distance(transform.position, enemy.transform.position);
@@ -56,11 +55,7 @@ public class Turret : MonoBehaviour
         if (target == null)
             return;
 
-        //target lock on
-        Vector3 dir = target.position - transform.position;
-        Quaternion lookRotation = Quaternion.LookRotation(dir);
-        Vector3 rotation = Quaternion.Lerp(partToRotate.rotation, lookRotation, Time.deltaTime * turnSpeed).eulerAngles;
-        partToRotate.rotation = Quaternion.Euler(0f, rotation.y, 0f);
+        LockOnTarget();
 
         if(fireCountdown <= 0f)
         {
@@ -71,17 +66,24 @@ public class Turret : MonoBehaviour
         fireCountdown -= Time.deltaTime;
     }
 
+    void LockOnTarget()
+    {
+        Vector3 dir = target.position - transform.position;
+        Quaternion lookRotation = Quaternion.LookRotation(dir);
+        Vector3 rotation = Quaternion.Lerp(partToRotate.rotation, lookRotation, Time.deltaTime * turnSpeed).eulerAngles;
+        partToRotate.rotation = Quaternion.Euler(0f, rotation.y, 0f);
+    }
+
     void Shoot()
     {
         GameObject bulletGO = ObjectPoolManager.Instance.GetObjectFromPool(ObjectPoolManager.PoolObjectType.Bullet);
         bulletGO.transform.position = firePoint.position;
         bulletGO.transform.rotation = firePoint.rotation;
-
         Bullet bullet = bulletGO.GetComponent<Bullet>();
 
         if (bullet != null)
         {
-            bullet.Seek(target);
+            bullet.SetTarget(target);
         }
     }
 

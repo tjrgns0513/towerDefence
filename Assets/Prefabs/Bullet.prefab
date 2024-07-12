@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 3940614069944399745}
   - component: {fileID: 7636825699068288491}
   - component: {fileID: -563984728539727176}
+  - component: {fileID: 6560977006286641356}
   m_Layer: 0
   m_Name: Bullet
   m_TagString: Untagged
@@ -29,7 +30,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 1, z: 0}
-  m_LocalScale: {x: 0.6, y: 0.6, z: 0.6}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -96,5 +97,26 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8d1f7ae3a0dfd1d45b1db27707e67f0b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  targetTr: {fileID: 0}
   speed: 70
-  impactEffect: {fileID: 2847633783028070284, guid: 8c85dddf2c376d346a0ea143458b4681, type: 3}
+--- !u!135 &6560977006286641356
+SphereCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8240462468343653783}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Radius: 0.5
+  m_Center: {x: 0, y: 0, z: 0}

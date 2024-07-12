@@ -5,43 +5,60 @@ using static UnityEngine.GraphicsBuffer;
 
 public class Bullet : MonoBehaviour
 {
-    private Transform targetTr;
+    public Transform targetTr;
     Enemy enemyTarget;
-    public float speed = 70f;
-    private int enemyId = -1;
+    public float speed = 30f;
 
-    private void Start()
+
+    public void Init(Transform target)
     {
-        enemyTarget = targetTr.GetComponent<Enemy>();
+        SetTarget(target);
     }
 
-    public void Seek(Transform _target)
+    public void SetTarget(Transform _target)
     {
         targetTr = _target;
+        enemyTarget = _target.GetComponent<Enemy>();
     }
 
     void Update()
     {
-        if (targetTr == null || targetTr.gameObject == null)
+        if (targetTr == null || targetTr.gameObject == null || enemyTarget.isDead || enemyTarget.gameObject == null)
         {
-            ObjectPoolManager.Instance.ReturnObjectToPool(gameObject, ObjectPoolManager.PoolObjectType.Bullet);
+            DisposeBullet();
             return;
         }
 
-        Vector3 dir = targetTr.position - transform.position;
-        float distanceThisFrame = speed * Time.deltaTime;
-
-        if (dir.magnitude <= distanceThisFrame)
-        {
-            HitTarget();
-            return;
-        }
-
-        transform.Translate(dir.normalized * distanceThisFrame, Space.World);
+        Seek();
     }
 
+    private void Seek()
+    {
+        Vector3 dir = targetTr.position - transform.position;
+        float distanceThisFrame = speed * Time.deltaTime;
+        transform.Translate(dir.normalized * distanceThisFrame, Space.World);
+        transform.LookAt(targetTr);
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.gameObject.CompareTag("Enemy"))
+        {
+            Enemy hitEnemy = other.gameObject.GetComponent<Enemy>();
+            if (hitEnemy != null && !hitEnemy.isDead)
+            {
+                HitTarget(hitEnemy);
+            }
+            else
+            {
+                DisposeBullet();
+            }
+        }
+    }
+
+
     //총알이 타겟에 맞았을때
-    void HitTarget()
+    void HitTarget(Enemy target)
     {
         //impactEffect 파티클위치에 총알위치를 받아서 실행
         GameObject effectObj = ObjectPoolManager.Instance.GetObjectFromPool(ObjectPoolManager.PoolObjectType.ImpactEffect);
@@ -49,21 +66,16 @@ public class Bullet : MonoBehaviour
         effectObj.transform.position = transform.position;
         effectObj.transform.rotation = transform.rotation;
 
-        if (targetTr != null)
+        if(!target.isDead)
         {
-            Debug.Log("111111");
-            enemyTarget.TakeDamage();
+            target.Die();
         }
 
-        //if (enemyId == enemyTarget.ID)
-        //{
-        //    ObjectPoolManager.Instance.ReturnObjectToPool(gameObject, PoolObjectType.Bullet);
-        //    return;
-        //}
+        ObjectPoolManager.Instance.ReturnObjectToPool(gameObject, ObjectPoolManager.PoolObjectType.Bullet);
+    }
 
-        //enemyId = enemyTarget.ID;
-        //enemyTarget.Die();
- 
+    void DisposeBullet()
+    {
         ObjectPoolManager.Instance.ReturnObjectToPool(gameObject, ObjectPoolManager.PoolObjectType.Bullet);
     }
 }
