@@ -2,18 +2,17 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
+public enum PoolObjectType
+{
+    Enemy,
+    Bullet,
+    ImpactEffect,
+    EnemyDeathEffect,
+}
 
 public class ObjectPoolManager : MonoBehaviour
 {
     public static ObjectPoolManager Instance { get; private set; }
-
-    public enum PoolObjectType
-    {
-        Enemy,
-        Bullet,
-        ImpactEffect,
-        EnemyDeathEffect,
-    }
 
     [SerializeField] private GameObject enemyPrefab;
     [SerializeField] private GameObject bulletPrefab;
@@ -46,6 +45,7 @@ public class ObjectPoolManager : MonoBehaviour
         }
         Instance = this;
 
+        
         // 프리팹과 부모를 Dictionary에 매핑하여 풀 초기화
         InitializePool(PoolObjectType.Enemy, enemyPrefab, enemyParent);
         InitializePool(PoolObjectType.Bullet, bulletPrefab, bulletsParent);

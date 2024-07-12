@@ -62,7 +62,7 @@ public class Bullet : MonoBehaviour
     void HitTarget(Enemy target)
     {
         //impactEffect 파티클위치에 총알위치를 받아서 실행
-        GameObject effectObj = ObjectPoolManager.Instance.GetObjectFromPool(ObjectPoolManager.PoolObjectType.ImpactEffect);
+        GameObject effectObj = ObjectPoolManager.Instance.GetObjectFromPool(PoolObjectType.ImpactEffect);
         EffectManager impactEffect = effectObj.GetComponent<EffectManager>();
         effectObj.transform.position = transform.position;
         effectObj.transform.rotation = transform.rotation;
@@ -72,11 +72,13 @@ public class Bullet : MonoBehaviour
             target.TakeDamage(damage);
         }
 
-        ObjectPoolManager.Instance.ReturnObjectToPool(gameObject, ObjectPoolManager.PoolObjectType.Bullet);
+        ObjectPoolManager.Instance.ReturnObjectToPool(gameObject, PoolObjectType.Bullet);
     }
 
     void DisposeBullet()
     {
-        ObjectPoolManager.Instance.ReturnObjectToPool(gameObject, ObjectPoolManager.PoolObjectType.Bullet);
+        targetTr = null;
+        enemyTarget = null;
+        ObjectPoolManager.Instance.ReturnObjectToPool(gameObject, PoolObjectType.Bullet);
     }
 }

@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 
 public class Node : MonoBehaviour
@@ -7,7 +8,7 @@ public class Node : MonoBehaviour
     public Color hoverColor;
     public Vector3 positionOffset;
 
-    private GameObject turret;
+    private Turret turret;
 
     private Renderer rend;
     private Color startColor;
@@ -34,8 +35,13 @@ public class Node : MonoBehaviour
 
         RewardManager.Instance.SubtractGold(50);
 
-        GameObject turretToBuild = BuildManager.Instance.GetTurretToBuild();
-        turret = (GameObject)Instantiate(turretToBuild, transform.position + positionOffset, transform.rotation);
+        var turretToBuild = BuildManager.Instance.GetTurretToBuild();
+        var obj = Instantiate(turretToBuild, transform.position + positionOffset, transform.rotation) as GameObject;
+        turret = obj.GetComponent<Turret>();
+        if (turret)
+            turret.Init();
+
+        obj.transform.parent = gameObject.transform;
     }
 
     private void OnMouseEnter()

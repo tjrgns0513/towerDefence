@@ -78,12 +78,10 @@ public class WaveSpawner : MonoBehaviour
 
     void SpawnEnemy()
     {
-        var enemyObject = ObjectPoolManager.Instance.GetObjectFromPool(ObjectPoolManager.PoolObjectType.Enemy);
+        var enemyObject = ObjectPoolManager.Instance.GetObjectFromPool(PoolObjectType.Enemy);
         Enemy enemy = enemyObject.GetComponent<Enemy>();
 
-        enemy.wavepointIndex = 0;
-        enemy.target = Waypoints.Instance.Points[enemy.wavepointIndex];
-        enemy.transform.position = enemy.basicPosition;
+        enemy.Init();
         enemy.currentHealth = enemy.maxHealth + waveNumber;
         enemy.speed = 10 + waveNumber;
         enemy.UpdateHealthBar();

@@ -13,11 +13,11 @@ public class EffectManager : MonoBehaviour
     {
         if(!impactEffectObj.GetComponent<ParticleSystem>().IsAlive())
         {
-            ObjectPoolManager.Instance.ReturnObjectToPool(impactEffectObj, ObjectPoolManager.PoolObjectType.ImpactEffect);
+            ObjectPoolManager.Instance.ReturnObjectToPool(impactEffectObj, PoolObjectType.ImpactEffect);
         }
         else if(!enemyDeathEffectObj.GetComponent<ParticleSystem>().IsAlive())
         {
-            ObjectPoolManager.Instance.ReturnObjectToPool(enemyDeathEffectObj, ObjectPoolManager.PoolObjectType.EnemyDeathEffect);
+            ObjectPoolManager.Instance.ReturnObjectToPool(enemyDeathEffectObj, PoolObjectType.EnemyDeathEffect);
         }
     }
 }
