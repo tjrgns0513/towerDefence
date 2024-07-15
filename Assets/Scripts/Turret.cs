@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class Turret : MonoBehaviour
 {
-    public Transform target;
+    public Transform targetTr;
 
     private float range = 15f;
     private float fireRate = 1f;
@@ -36,17 +36,17 @@ public class Turret : MonoBehaviour
 
         if (nearestEnemy != null && shortestDistnace <= range)
         {
-            target = nearestEnemy.transform;
+            targetTr = nearestEnemy.transform;
         }
         else
         {
-            target = null;
+            targetTr = null;
         }
     }
 
     void Update()
     {
-        if (target == null)
+        if (targetTr == null)
             return;
 
         LockOnTarget();
@@ -62,7 +62,7 @@ public class Turret : MonoBehaviour
 
     void LockOnTarget()
     {
-        Vector3 dir = target.position - transform.position;
+        Vector3 dir = targetTr.position - transform.position;
         Quaternion lookRotation = Quaternion.LookRotation(dir);
         Vector3 rotation = Quaternion.Lerp(partToRotate.rotation, lookRotation, Time.deltaTime * turnSpeed).eulerAngles;
         partToRotate.rotation = Quaternion.Euler(0f, rotation.y, 0f);
@@ -75,11 +75,11 @@ public class Turret : MonoBehaviour
         bulletGO.transform.rotation = firePoint.rotation;
         Bullet bullet = bulletGO.GetComponent<Bullet>();
 
-        bullet.Init(target);
+        bullet.Init(targetTr);
 
         if (bullet != null)
         {
-            bullet.SetTarget(target);
+            bullet.SetTarget(targetTr);
         }
     }
 
