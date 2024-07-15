@@ -1,9 +1,10 @@
 using UnityEngine;
+using static UnityEngine.GraphicsBuffer;
 
 public class Bullet : MonoBehaviour
 {
     private Enemy enemyTarget;
-
+    public Transform targetTr;
     public float speed = 30f;
     public int damage = 20;
 
@@ -14,6 +15,7 @@ public class Bullet : MonoBehaviour
 
     public void SetTarget(Transform target)
     {
+        targetTr = target;
         enemyTarget = target.GetComponent<Enemy>();
     }
 
@@ -35,10 +37,10 @@ public class Bullet : MonoBehaviour
 
     private void Seek()
     {
-        Vector3 dir = enemyTarget.transform.position - transform.position;
+        Vector3 dir = targetTr.position - transform.position;
         float distanceThisFrame = speed * Time.deltaTime;
         transform.Translate(dir.normalized * distanceThisFrame, Space.World);
-        transform.LookAt(enemyTarget.transform);
+        transform.LookAt(targetTr);
     }
 
     private void OnTriggerEnter(Collider other)

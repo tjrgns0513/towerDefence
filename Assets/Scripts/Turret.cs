@@ -7,10 +7,10 @@ public class Turret : MonoBehaviour
     private float range = 15f;
     private float fireRate = 1f;
     private float fireCountdown = 0f;
+    private float turnSpeed = 10f;
+    private string enemyTag = "Enemy";
 
-    public string enemyTag = "Enemy";
     public Transform partToRotate;
-    public float turnSpeed = 10f;
     public GameObject bulletPrefab;
     public Transform firePoint;
     public void Init()

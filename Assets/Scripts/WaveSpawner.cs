@@ -80,7 +80,7 @@ public class WaveSpawner : MonoBehaviour
 
         enemy.Init();
         enemy.currentHealth = enemy.maxHealth + waveNumber;
-        enemy.speed = enemy.speed + waveNumber;
+        enemy.speed = 10 + waveNumber;
         enemy.UpdateHealthBar();
         enemyObject.SetActive(true);
     }

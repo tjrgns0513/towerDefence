@@ -97,8 +97,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8d1f7ae3a0dfd1d45b1db27707e67f0b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  enemyTarget: {fileID: 0}
   targetTr: {fileID: 0}
   speed: 70
+  damage: 20
 --- !u!135 &6560977006286641356
 SphereCollider:
   m_ObjectHideFlags: 0

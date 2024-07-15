@@ -4,6 +4,7 @@ using UnityEngine.UI;
 public class Enemy : MonoBehaviour
 {
     private Transform targetTr;
+    [SerializeField]
     private int wavepointIndex = 0;
     public bool isDead = false;
 
