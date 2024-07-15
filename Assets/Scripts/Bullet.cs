@@ -4,10 +4,8 @@ public class Bullet : MonoBehaviour
 {
     private Enemy enemyTarget;
 
-    [SerializeField]
-    private float speed = 30f;
-    [SerializeField]
-    private int damage = 20;
+    public float speed = 30f;
+    public int damage = 20;
 
     public void Init(Transform target)
     {

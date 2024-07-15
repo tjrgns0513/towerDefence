@@ -4,8 +4,6 @@ using UnityEngine.UI;
 public class PlayerManager : MonoBehaviour
 {
     private static PlayerManager instance;
-
-    [SerializeField]
     public int playerLife = 3;
     public Text playerLifeText;
 

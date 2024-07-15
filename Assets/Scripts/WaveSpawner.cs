@@ -30,7 +30,6 @@ public class WaveSpawner : MonoBehaviour
     private void Awake()
     {
         instance = this;
-
     }
 
     private void Update()
@@ -81,7 +80,7 @@ public class WaveSpawner : MonoBehaviour
 
         enemy.Init();
         enemy.currentHealth = enemy.maxHealth + waveNumber;
-        enemy.speed = 10 + waveNumber;
+        enemy.speed = enemy.speed + waveNumber;
         enemy.UpdateHealthBar();
         enemyObject.SetActive(true);
     }

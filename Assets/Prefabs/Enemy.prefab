@@ -123,7 +123,7 @@ MonoBehaviour:
   isDead: 0
   healthBarCanvas: {fileID: 4851893755423396360}
   healthBarSlider: {fileID: 8387964031991961576}
-  speed: 150
+  speed: 10
   maxHealth: 50
   currentHealth: 0
 --- !u!54 &934893545586272684

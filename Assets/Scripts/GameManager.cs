@@ -8,7 +8,7 @@ public class GameManager : MonoBehaviour
     public GameObject startGameUI;
     public GameObject gameOverUI;
     public GameObject[] gameObjectsToDisable; // 게임오브젝트 상호작용제어
-
+    
     public static GameManager Instance
     {
         get
