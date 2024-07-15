@@ -3,6 +3,8 @@ using UnityEngine;
 public class BuildManager : MonoBehaviour
 {
     private static BuildManager instance;
+    private GameObject turretToBuild;
+    public GameObject standardTurretPrefab;
 
     public static BuildManager Instance
     {
@@ -17,14 +19,13 @@ public class BuildManager : MonoBehaviour
         instance = this;
     }
 
-    public GameObject standardTurretPrefab;
-
+    
     private void Start()
     {
         turretToBuild = standardTurretPrefab;
     }
 
-    private GameObject turretToBuild;
+    
 
     public GameObject GetTurretToBuild()
     {

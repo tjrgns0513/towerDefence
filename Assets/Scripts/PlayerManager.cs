@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -7,7 +5,8 @@ public class PlayerManager : MonoBehaviour
 {
     private static PlayerManager instance;
 
-    private int playerLife = 3;
+    [SerializeField]
+    public int playerLife = 3;
     public Text playerLifeText;
 
     public static PlayerManager Instance

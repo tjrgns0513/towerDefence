@@ -3,35 +3,45 @@ using UnityEngine.UI;
 
 public class Enemy : MonoBehaviour
 {
-    public float speed = 10f;
-    public Transform target;       //이동할 타켓 위치
-    public int wavepointIndex = 0;
-    public int ID { get; private set; }
+    private Transform targetTr;
+    private int wavepointIndex = 0;
     public bool isDead = false;
 
-    public int maxHealth = 100;
-    public int currentHealth;
     public Canvas healthBarCanvas;
     public Slider healthBarSlider;
 
-
+    public float speed = 10f;
+    public int maxHealth = 100;
+    public int currentHealth;
 
     public void Init()
     {
         wavepointIndex = 0;
-        target = Waypoints.Instance.Points[0];
+        targetTr = Waypoints.Instance.Points[0];
         transform.position = new Vector3(0f, 2f, 0f);
     }
 
     private void Update()
     {
-        Vector3 dir = target.position - transform.position;
+        Vector3 dir = targetTr.position - transform.position;
         transform.Translate(dir.normalized * speed * Time.deltaTime);
 
-        if (Vector3.Distance(transform.position, target.position) <= 0.2f)
-        {
-            GetNextWayPoint();
-        }
+        Vector3 pos = transform.position;
+        Vector3 targetPos = targetTr.position;
+        MoveCheck(dir.normalized, Vector3.right, pos.x >= targetPos.x);
+        MoveCheck(dir.normalized, Vector3.left, pos.x <= targetPos.x);
+        MoveCheck(dir.normalized, Vector3.forward, pos.z >= targetPos.z);
+        MoveCheck(dir.normalized, Vector3.back, pos.z <= targetPos.z);
+    }
+
+    //Enemy가 이동포인트에 도착했는지 체크
+    void MoveCheck(Vector3 dir, Vector3 checkDir, bool check)
+    {
+        if (dir != checkDir) return;
+        if (!check) return;
+
+        transform.position = targetTr.position;
+        GetNextWayPoint();
     }
 
     void GetNextWayPoint()
@@ -45,14 +55,12 @@ public class Enemy : MonoBehaviour
         }
 
         wavepointIndex++;
-        target = Waypoints.Instance.Points[wavepointIndex];
+        targetTr = Waypoints.Instance.Points[wavepointIndex];
     }
 
     public void TakeDamage(int amount)
     {
         currentHealth -= amount;
-
-        Debug.Log("currentHealth : " + currentHealth);
 
         if (currentHealth <= 0 && !isDead)
         {
@@ -81,10 +89,5 @@ public class Enemy : MonoBehaviour
         WaveSpawner.Instance.EnemyDeathCount();
         ObjectPoolManager.Instance.ReturnObjectToPool(gameObject, PoolObjectType.Enemy);
         RewardManager.Instance.AddGold(10);
-    }
-
-    public void SetID(int id)
-    {
-        ID = id;
     }
 }

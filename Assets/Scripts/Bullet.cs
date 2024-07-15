@@ -1,44 +1,46 @@
-using System.Collections;
 using UnityEngine;
-using static ObjectPoolManager;
-using static UnityEngine.GraphicsBuffer;
 
 public class Bullet : MonoBehaviour
 {
-    public Transform targetTr;
-    Enemy enemyTarget;
-    public float speed = 30f;
-    public int damage = 20;
+    private Enemy enemyTarget;
 
+    [SerializeField]
+    private float speed = 30f;
+    [SerializeField]
+    private int damage = 20;
 
     public void Init(Transform target)
     {
         SetTarget(target);
     }
 
-    public void SetTarget(Transform _target)
+    public void SetTarget(Transform target)
     {
-        targetTr = _target;
-        enemyTarget = _target.GetComponent<Enemy>();
+        enemyTarget = target.GetComponent<Enemy>();
     }
 
     void Update()
     {
-        if (targetTr == null || targetTr.gameObject == null || enemyTarget.isDead || enemyTarget.gameObject == null)
+        //적이 죽었거나 null일때
+        EnemyIsValid();
+        Seek();
+    }
+
+    private void EnemyIsValid()
+    {
+        if (enemyTarget.isDead || enemyTarget.gameObject == null)
         {
             DisposeBullet();
             return;
         }
-
-        Seek();
     }
 
     private void Seek()
     {
-        Vector3 dir = targetTr.position - transform.position;
+        Vector3 dir = enemyTarget.transform.position - transform.position;
         float distanceThisFrame = speed * Time.deltaTime;
         transform.Translate(dir.normalized * distanceThisFrame, Space.World);
-        transform.LookAt(targetTr);
+        transform.LookAt(enemyTarget.transform);
     }
 
     private void OnTriggerEnter(Collider other)
@@ -77,7 +79,6 @@ public class Bullet : MonoBehaviour
 
     void DisposeBullet()
     {
-        targetTr = null;
         enemyTarget = null;
         ObjectPoolManager.Instance.ReturnObjectToPool(gameObject, PoolObjectType.Bullet);
     }

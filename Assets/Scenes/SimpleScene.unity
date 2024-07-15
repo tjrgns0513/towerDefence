@@ -4024,7 +4024,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   enemyPrefab: {fileID: 4443930897944552999, guid: 067e70dd206d3a94b9c5c8a9cd3f0c07, type: 3}
   spawnPoint: {fileID: 1597286627}
-  timeBetweenWaves: 5
+  timeBetweenWaves: 3
   waveCountdownText: {fileID: 1123897791}
   waveNumberText: {fileID: 750210453}
 --- !u!4 &366697532
@@ -11207,6 +11207,37 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 3028902733617072914, guid: 06903c008a5f29e4dbe5c61ba996300e, type: 3}
   m_PrefabInstance: {fileID: 1275538148}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1303986182
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1303986183}
+  m_Layer: 0
+  m_Name: GameObject
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1303986183
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1303986182}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 40, y: 80, z: -70}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &1317260146
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -17131,3 +17162,4 @@ SceneRoots:
   - {fileID: 1641676001}
   - {fileID: 1972809082}
   - {fileID: 839804313}
+  - {fileID: 1303986183}

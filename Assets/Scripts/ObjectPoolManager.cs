@@ -1,7 +1,5 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UIElements;
 public enum PoolObjectType
 {
     Enemy,
@@ -33,8 +31,6 @@ public class ObjectPoolManager : MonoBehaviour
     }
 
     private Dictionary<PoolObjectType, ObjectPool> objectPools = new Dictionary<PoolObjectType, ObjectPool>();
-
-    private int enemyIDCounter = 0;
 
     private void Awake()
     {
@@ -101,7 +97,6 @@ public class ObjectPoolManager : MonoBehaviour
             Enemy enemy = obj.GetComponent<Enemy>();
             if (enemy != null)
             {
-                enemy.SetID(enemyIDCounter++);
                 enemy.isDead = false;
             }
         }

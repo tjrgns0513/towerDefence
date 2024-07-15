@@ -120,15 +120,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 47c6eede44dc9544abe9d9dc33e3cfdf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  speed: 10
-  target: {fileID: 0}
-  basicPosition: {x: 0, y: 0, z: 0}
-  wavepointIndex: 0
   isDead: 0
-  deathEffect: {fileID: 0}
-  maxHealth: 50
   healthBarCanvas: {fileID: 4851893755423396360}
   healthBarSlider: {fileID: 8387964031991961576}
+  speed: 150
+  maxHealth: 50
+  currentHealth: 0
 --- !u!54 &934893545586272684
 Rigidbody:
   m_ObjectHideFlags: 0

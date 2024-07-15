@@ -1,18 +1,13 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using static ObjectPoolManager;
 
 public class Turret : MonoBehaviour
 {
     public Transform target;
 
-    [Header("Attributes")]
-    public float range = 15f;
-    public float fireRate = 1f;
+    private float range = 15f;
+    private float fireRate = 1f;
     private float fireCountdown = 0f;
 
-    [Header("Unity Setup Fields")]
     public string enemyTag = "Enemy";
     public Transform partToRotate;
     public float turnSpeed = 10f;
@@ -79,6 +74,8 @@ public class Turret : MonoBehaviour
         bulletGO.transform.position = firePoint.position;
         bulletGO.transform.rotation = firePoint.rotation;
         Bullet bullet = bulletGO.GetComponent<Bullet>();
+
+        bullet.Init(target);
 
         if (bullet != null)
         {

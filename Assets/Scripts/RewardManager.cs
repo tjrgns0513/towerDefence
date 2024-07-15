@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -7,7 +5,7 @@ public class RewardManager : MonoBehaviour
 {
     private static RewardManager instance = null;
     public Text goldText;
-    private int gold = 100;
+    public int gold = 100;
 
     public static RewardManager Instance
     {

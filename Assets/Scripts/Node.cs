@@ -1,17 +1,12 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEditor;
 using UnityEngine;
 
 public class Node : MonoBehaviour
 {
-    public Color hoverColor;
-    public Vector3 positionOffset;
-
     private Turret turret;
-
     private Renderer rend;
-    private Color startColor;
+    public Color hoverColor;
+    public Color startColor;
+    public Vector3 positionOffset;
 
     private void Start()
     {
@@ -23,16 +18,16 @@ public class Node : MonoBehaviour
     {
         if(turret != null)
         {
-            Debug.Log("Can't build there!");
             return;
         }
 
+        //ÅÍ·¿Áþ´Âºñ¿ë 50°ñµåº¸´Ù Àû´Ù¸é
         if(RewardManager.Instance.GetGold() < 50)
         {
-            Debug.Log("Don't have money");
             return;
         }
 
+        //ÅÍ·¿Áþ´Âºñ¿ë Â÷°¨
         RewardManager.Instance.SubtractGold(50);
 
         var turretToBuild = BuildManager.Instance.GetTurretToBuild();
