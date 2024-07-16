@@ -1,3 +1,4 @@
+using System.IO;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -15,6 +16,8 @@ public class Enemy : MonoBehaviour
     public int maxHealth = 100;
     public int currentHealth;
 
+    public float waypointThreshold = 0.1f;
+
     public void Init()
     {
         wavepointIndex = 0;
@@ -24,39 +27,45 @@ public class Enemy : MonoBehaviour
 
     private void Update()
     {
-        Vector3 dir = targetTr.position - transform.position;
-        transform.Translate(dir.normalized * speed * Time.deltaTime);
+        //Vector3 dir = targetTr.position - transform.position;
+        //transform.Translate(dir.normalized * speed * Time.deltaTime);
 
-        Vector3 pos = transform.position;
-        Vector3 targetPos = targetTr.position;
-        MoveCheck(dir.normalized, Vector3.right, pos.x >= targetPos.x);
-        MoveCheck(dir.normalized, Vector3.left, pos.x <= targetPos.x);
-        MoveCheck(dir.normalized, Vector3.forward, pos.z >= targetPos.z);
-        MoveCheck(dir.normalized, Vector3.back, pos.z <= targetPos.z);
+        MoveByPath(Time.deltaTime);
     }
 
-    //Enemy가 이동포인트에 도착했는지 체크
-    void MoveCheck(Vector3 dir, Vector3 checkDir, bool check)
+    private void MoveByPath(float deltaTime)
     {
-        if (dir != checkDir) return;
-        if (!check) return;
+        float moveDist = deltaTime * speed;
 
-        transform.position = targetTr.position;
-        GetNextWayPoint();
-    }
-
-    void GetNextWayPoint()
-    {
-        if (wavepointIndex >= Waypoints.Instance.Points.Length - 1)
+        while (moveDist > 0 && wavepointIndex >= 0 && wavepointIndex < Waypoints.Instance.Points.Length)
         {
-            WaveSpawner.Instance.EnemyDeathCount();
-            PlayerManager.Instance.PlayerLife(1);
-            ObjectPoolManager.Instance.ReturnObjectToPool(gameObject, PoolObjectType.Enemy);
-            return;
-        }
+            Vector3 targetPos = Waypoints.Instance.Points[wavepointIndex].position;
+            Vector3 moveDir = (targetPos - transform.position).normalized;
+            float distToCurTarget = Vector3.Distance(transform.position, targetPos);
 
-        wavepointIndex++;
-        targetTr = Waypoints.Instance.Points[wavepointIndex];
+            if (distToCurTarget < waypointThreshold)
+            {
+                wavepointIndex++;
+                if (wavepointIndex >= Waypoints.Instance.Points.Length)
+                {
+                    OnReachEndOfPath();
+                    return;
+                }
+                continue;
+            }
+
+            float moveDistToCurTarget = Mathf.Min(moveDist, distToCurTarget);
+            transform.Translate(moveDir * moveDistToCurTarget, Space.World);
+
+            moveDist -= moveDistToCurTarget;
+        }
+    }
+
+    private void OnReachEndOfPath()
+    {
+        WaveSpawner.Instance.EnemyDeathCount();
+        PlayerManager.Instance.PlayerLife(1);
+        ObjectPoolManager.Instance.ReturnObjectToPool(gameObject, PoolObjectType.Enemy);
     }
 
     public void TakeDamage(int amount)
@@ -72,10 +81,7 @@ public class Enemy : MonoBehaviour
 
     public void UpdateHealthBar()
     {
-        if (healthBarSlider != null)
-        {
-            healthBarSlider.value = (float)currentHealth / maxHealth;
-        }
+        healthBarSlider.value = (float)currentHealth / maxHealth;
     }
 
     public void Die()
