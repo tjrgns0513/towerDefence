@@ -21,7 +21,7 @@ public class Bullet : MonoBehaviour
 
     void Update()
     {
-        //ÀûÀÌ Á×¾ú°Å³ª nullÀÏ¶§
+        //ì ì´ ì£½ì—ˆê±°ë‚˜ nullì¼ë•Œ
         EnemyIsValid();
         Seek();
     }
@@ -60,11 +60,11 @@ public class Bullet : MonoBehaviour
     }
 
 
-    //ÃÑ¾ËÀÌ Å¸°Ù¿¡ ¸Â¾ÒÀ»¶§
+    //ì´ì•Œì´ íƒ€ê²Ÿì— ë§ì•˜ì„ë•Œ
     void HitTarget(Enemy target)
     {
-        //impactEffect ÆÄÆ¼Å¬À§Ä¡¿¡ ÃÑ¾ËÀ§Ä¡¸¦ ¹Ş¾Æ¼­ ½ÇÇà
-        GameObject effectObj = ObjectPoolManager.Instance.GetObjectFromPool(PoolObjectType.ImpactEffect);
+        //impactEffect íŒŒí‹°í´ìœ„ì¹˜ì— ì´ì•Œìœ„ì¹˜ë¥¼ ë°›ì•„ì„œ ì‹¤í–‰
+        GameObject effectObj = ObjectPoolManager.Instance.GetObjectFromPool("ImpactEffect");
         EffectManager impactEffect = effectObj.GetComponent<EffectManager>();
         effectObj.transform.position = transform.position;
         effectObj.transform.rotation = transform.rotation;
@@ -74,12 +74,12 @@ public class Bullet : MonoBehaviour
             target.TakeDamage(damage);
         }
 
-        ObjectPoolManager.Instance.ReturnObjectToPool(gameObject, PoolObjectType.Bullet);
+        ObjectPoolManager.Instance.ReturnObjectToPool(gameObject, "Bullet");
     }
 
     void DisposeBullet()
     {
         enemyTarget = null;
-        ObjectPoolManager.Instance.ReturnObjectToPool(gameObject, PoolObjectType.Bullet);
+        ObjectPoolManager.Instance.ReturnObjectToPool(gameObject, "Bullet");
     }
 }

@@ -70,7 +70,7 @@ public class Turret : MonoBehaviour
 
     void Shoot()
     {
-        GameObject bulletGO = ObjectPoolManager.Instance.GetObjectFromPool(PoolObjectType.Bullet);
+        GameObject bulletGO = ObjectPoolManager.Instance.GetObjectFromPool("Bullet");
         bulletGO.transform.position = firePoint.position;
         bulletGO.transform.rotation = firePoint.rotation;
         Bullet bullet = bulletGO.GetComponent<Bullet>();
@@ -83,7 +83,7 @@ public class Turret : MonoBehaviour
         }
     }
 
-    //°ø°Ý¹üÀ§
+    //ê³µê²©ë²”ìœ„
     private void OnDrawGizmosSelected()
     {
         Gizmos.color = Color.red;

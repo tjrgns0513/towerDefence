@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -7,7 +8,7 @@ public class GameManager : MonoBehaviour
 
     public GameObject startGameUI;
     public GameObject gameOverUI;
-    public GameObject[] gameObjectsToDisable; // °ÔÀÓ¿ÀºêÁ§Æ® »óÈ£ÀÛ¿ëÁ¦¾î
+    public GameObject[] gameObjectsToDisable; // ê²Œì„ì˜¤ë¸Œì íŠ¸ ìƒí˜¸ì‘ìš©ì œì–´
     
     public static GameManager Instance
     {
@@ -22,6 +23,7 @@ public class GameManager : MonoBehaviour
         if (instance == null)
         {
             instance = this;
+            DontDestroyOnLoad(gameObject);
         }
         else
         {
@@ -51,6 +53,7 @@ public class GameManager : MonoBehaviour
     {
         SceneManager.LoadScene(0);
         Time.timeScale = 1f;
+        ShowStartGameUI();
     }
 
     void ShowStartGameUI()

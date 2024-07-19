@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using UnityEngine;
 public enum PoolObjectType
 {
-    Enemy,
     Bullet,
     ImpactEffect,
     EnemyDeathEffect,
@@ -12,7 +11,7 @@ public class ObjectPoolManager : MonoBehaviour
 {
     public static ObjectPoolManager Instance { get; private set; }
 
-    [SerializeField] private GameObject enemyPrefab;
+    [SerializeField] private EnemyType[] enemyTypes;
     [SerializeField] private GameObject bulletPrefab;
     [SerializeField] private GameObject impactEffectPrefab;
     [SerializeField] private GameObject enemyDeathEffectPrefab;
@@ -30,7 +29,7 @@ public class ObjectPoolManager : MonoBehaviour
         public Transform Parent { get; set; }
     }
 
-    private Dictionary<PoolObjectType, ObjectPool> objectPools = new Dictionary<PoolObjectType, ObjectPool>();
+    private Dictionary<string, ObjectPool> objectPools = new Dictionary<string, ObjectPool>();
 
     private void Awake()
     {
@@ -41,15 +40,19 @@ public class ObjectPoolManager : MonoBehaviour
         }
         Instance = this;
 
-        
-        // ÇÁ¸®ÆÕ°ú ºÎ¸ğ¸¦ Dictionary¿¡ ¸ÅÇÎÇÏ¿© Ç® ÃÊ±âÈ­
-        InitializePool(PoolObjectType.Enemy, enemyPrefab, enemyParent);
-        InitializePool(PoolObjectType.Bullet, bulletPrefab, bulletsParent);
-        InitializePool(PoolObjectType.ImpactEffect, impactEffectPrefab, impactEffectsParent);
-        InitializePool(PoolObjectType.EnemyDeathEffect, enemyDeathEffectPrefab, enemyDeathEffectsParent);
+        // ì  í”„ë¦¬íŒ¹ í’€ ì´ˆê¸°í™”
+        foreach (var enemyType in enemyTypes)
+        {
+            InitializePool(enemyType.enemyName, enemyType.prefab, enemyParent);
+        }
+
+        // í”„ë¦¬íŒ¹ê³¼ ë¶€ëª¨ë¥¼ Dictionaryì— ë§¤í•‘í•˜ì—¬ í’€ ì´ˆê¸°í™”
+        InitializePool("Bullet", bulletPrefab, bulletsParent);
+        InitializePool("ImpactEffect", impactEffectPrefab, impactEffectsParent);
+        InitializePool("EnemyDeathEffect", enemyDeathEffectPrefab, enemyDeathEffectsParent);
     }
 
-    private void InitializePool(PoolObjectType objType, GameObject prefab, Transform parent)
+    private void InitializePool(string objName, GameObject prefab, Transform parent)
     {
         Queue<GameObject> objectPool = new Queue<GameObject>();
 
@@ -61,7 +64,7 @@ public class ObjectPoolManager : MonoBehaviour
             objectPool.Enqueue(obj);
         }
 
-        objectPools[objType] = new ObjectPool
+        objectPools[objName] = new ObjectPool
         {
             Pool = objectPool,
             Prefab = prefab,
@@ -69,15 +72,15 @@ public class ObjectPoolManager : MonoBehaviour
         };
     }
 
-    public GameObject GetObjectFromPool(PoolObjectType objType)
+    public GameObject GetObjectFromPool(string objName)
     {
-        if (!objectPools.ContainsKey(objType))
+        if (!objectPools.ContainsKey(objName))
         {
-            Debug.LogWarning($"Object type {objType} not found in pool");
+            Debug.LogWarning($"Object type {objName} not found in pool");
             return null;
         }
 
-        ObjectPool selectedPool = objectPools[objType];
+        ObjectPool selectedPool = objectPools[objName];
         GameObject obj;
 
         if (selectedPool.Pool.Count > 0)
@@ -86,13 +89,13 @@ public class ObjectPoolManager : MonoBehaviour
         }
         else
         {
-            // PrefabÀ» Ã£¾Æ¼­ »õ·Î ÀÎ½ºÅÏ½ºÈ­
+            // Prefabì„ ì°¾ì•„ì„œ ìƒˆë¡œ ì¸ìŠ¤í„´ìŠ¤í™”
             obj = Instantiate(selectedPool.Prefab);
             obj.transform.SetParent(selectedPool.Parent);
         }
 
-        // Àû ¿ÀºêÁ§Æ®¿¡ »õ·Î¿î ID ºÎ¿©
-        if (objType == PoolObjectType.Enemy)
+        // ì  ì˜¤ë¸Œì íŠ¸ ì´ˆê¸°í™”
+        if (objName.Contains("Enemy"))
         {
             Enemy enemy = obj.GetComponent<Enemy>();
             if (enemy != null)
@@ -105,15 +108,15 @@ public class ObjectPoolManager : MonoBehaviour
         return obj;
     }
 
-    public void ReturnObjectToPool(GameObject obj, PoolObjectType objType)
+    public void ReturnObjectToPool(GameObject obj, string objName)
     {
-        if (!objectPools.ContainsKey(objType))
+        if (!objectPools.ContainsKey(objName))
         {
-            Debug.LogWarning($"Object type {objType} not found in pool");
+            Debug.LogWarning($"Object type {objName} not found in pool");
             return;
         }
 
         obj.SetActive(false);
-        objectPools[objType].Pool.Enqueue(obj);
+        objectPools[objName].Pool.Enqueue(obj);
     }
 }

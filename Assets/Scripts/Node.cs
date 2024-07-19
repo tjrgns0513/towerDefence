@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 public class Node : MonoBehaviour
@@ -21,13 +22,13 @@ public class Node : MonoBehaviour
             return;
         }
 
-        //ÅÍ·¿Áş´Âºñ¿ë 50°ñµåº¸´Ù Àû´Ù¸é
+        //í„°ë ›ì§“ëŠ”ë¹„ìš© 50ê³¨ë“œë³´ë‹¤ ì ë‹¤ë©´
         if(RewardManager.Instance.GetGold() < 50)
         {
             return;
         }
 
-        //ÅÍ·¿Áş´Âºñ¿ë Â÷°¨
+        //í„°ë ›ì§“ëŠ”ë¹„ìš© ì°¨ê°
         RewardManager.Instance.SubtractGold(50);
 
         var turretToBuild = BuildManager.Instance.GetTurretToBuild();

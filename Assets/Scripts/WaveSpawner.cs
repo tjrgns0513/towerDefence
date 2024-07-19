@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -6,13 +7,13 @@ public class WaveSpawner : MonoBehaviour
 {
     private static WaveSpawner instance = null;
 
-    public Transform enemyPrefab;
+    public EnemyType[] enemyTypes; // 스크립터블 오브젝트 배열
     public Transform spawnPoint;
 
     public int timeBetweenWaves = 3;
 
-    public Text waveCountdownText;
-    public Text waveNumberText;
+    public UnityEngine.UI.Text waveCountdownText;
+    public UnityEngine.UI.Text waveNumberText;
 
     private int waveNumber = 0;
     private int enemyAlive = 0;
@@ -29,7 +30,24 @@ public class WaveSpawner : MonoBehaviour
 
     private void Awake()
     {
-        instance = this;
+        if (instance == null)
+        {
+            instance = this;
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
+    }
+
+    private void OnEnable()
+    {
+        MapManager.OnMapLoaded += SetSpawnPoint; // 맵 로드 완료 이벤트 구독
+    }
+
+    private void OnDisable()
+    {
+        MapManager.OnMapLoaded -= SetSpawnPoint; // 맵 로드 완료 이벤트 구독 해제
     }
 
     private void Update()
@@ -57,7 +75,7 @@ public class WaveSpawner : MonoBehaviour
 
     IEnumerator TimeCountDown()
     {
-        for(int i = timeBetweenWaves; i >= 0; i--)
+        for (int i = timeBetweenWaves; i >= 0; i--)
         {
             waveCountdownText.text = i.ToString();
             yield return new WaitForSeconds(1f);
@@ -72,15 +90,17 @@ public class WaveSpawner : MonoBehaviour
         StartCoroutine(SpawnWave());
     }
 
-
     void SpawnEnemy()
     {
-        var enemyObject = ObjectPoolManager.Instance.GetObjectFromPool(PoolObjectType.Enemy);
+        // 랜덤으로 적 타입 선택 (또는 다른 로직 사용 가능)
+        int randomIndex = Random.Range(0, enemyTypes.Length);
+        EnemyType selectedEnemyType = enemyTypes[randomIndex];
+
+        var enemyObject = ObjectPoolManager.Instance.GetObjectFromPool(selectedEnemyType.enemyName);
         Enemy enemy = enemyObject.GetComponent<Enemy>();
 
-        enemy.Init();
-        enemy.currentHealth = enemy.maxHealth + waveNumber;
-        enemy.speed = 10 + waveNumber;
+        enemy.Init(selectedEnemyType);
+        enemy.transform.position = spawnPoint.position;
         enemy.UpdateHealthBar();
         enemyObject.SetActive(true);
     }
@@ -93,5 +113,10 @@ public class WaveSpawner : MonoBehaviour
         {
             isStart = true;
         }
+    }
+
+    private void SetSpawnPoint()
+    {
+        spawnPoint = MapManager.Instance.startPoint;
     }
 }

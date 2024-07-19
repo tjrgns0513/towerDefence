@@ -17,7 +17,6 @@ public class Waypoints : MonoBehaviour
     {
         instance = this;
 
-
         Points = new Transform[transform.childCount];
 
         for (int i = 0; i < Points.Length; i++)
