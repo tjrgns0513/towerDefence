@@ -165,8 +165,8 @@ public class MapEditor : Editor
     // 그리드 스냅 함수
     private Vector3 SnapToGrid(Vector3 position, float snapValue)
     {
-        position.x = Mathf.Round(position.x / snapValue) * snapValue;
-        position.z = Mathf.Round(position.z / snapValue) * snapValue;
+        position.x = Mathf.Floor(position.x / snapValue) * snapValue + snapValue / 2;
+        position.z = Mathf.Floor(position.z / snapValue) * snapValue + snapValue / 2;
         return position;
     }
 
@@ -226,13 +226,13 @@ public class MapEditor : Editor
         Handles.color = mapManager.gridColor;
 
         float gridSize = mapManager.gridSize;
-        for (float x = 0; x <= mapManager.mapSize.x; x += gridSize)
+        for (float x = -100; x < 100; x += gridSize)
         {
-            Handles.DrawLine(new Vector3(x, 0, 0), new Vector3(x, 0, mapManager.mapSize.y));
+            Handles.DrawLine(new Vector3(x, 0, -100), new Vector3(x, 0, 100));
         }
-        for (float z = 0; z <= mapManager.mapSize.y; z += gridSize)
+        for (float z = -100; z < 100; z += gridSize)
         {
-            Handles.DrawLine(new Vector3(0, 0, z), new Vector3(mapManager.mapSize.x, 0, z));
+            Handles.DrawLine(new Vector3(-100, 0, z), new Vector3(100, 0, z));
         }
     }
 
