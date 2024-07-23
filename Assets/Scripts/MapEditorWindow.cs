@@ -1,8 +1,7 @@
 using UnityEngine;
 using UnityEditor;
 
-[CustomEditor(typeof(MapManager))]
-public class MapEditor : Editor
+public class MapEditorWindow : EditorWindow
 {
     private MapManager mapManager;
     private bool addingWaypoint = false;
@@ -15,9 +14,15 @@ public class MapEditor : Editor
     private float minDistance = 0.1f; // 오브젝트가 이미 있는지 확인하는 최소 거리
     private int selectedMapIndex = 0; // 로드할 맵 인덱스
 
+    [MenuItem("Window/Map Editor")]
+    public static void ShowWindow()
+    {
+        GetWindow<MapEditorWindow>("Map Editor");
+    }
+
+
     private void OnEnable()
     {
-        mapManager = (MapManager)target;
         SceneView.duringSceneGui += OnSceneGUI; // Scene GUI 이벤트 등록
     }
 
@@ -26,8 +31,82 @@ public class MapEditor : Editor
         SceneView.duringSceneGui -= OnSceneGUI; // Scene GUI 이벤트 해제
     }
 
+    private void OnGUI()
+    {
+        GUILayout.Label("Snap Settings", EditorStyles.boldLabel);
+        snapValue = EditorGUILayout.FloatField("Snap Value", snapValue);
+        minDistance = EditorGUILayout.FloatField("Min Distance", minDistance);
+
+        GUILayout.Label("Map Settings", EditorStyles.boldLabel);
+        if (mapManager != null)
+        {
+            mapManager.mapSize = EditorGUILayout.Vector2Field("Map Size", mapManager.mapSize);
+        }
+
+        // 각 모드 버튼 설정
+        addingWaypoint = GUILayout.Toggle(addingWaypoint, "Add Waypoint Mode", "Button");
+        if (addingWaypoint)
+        {
+            addingStartPoint = addingEndPoint = addingCube = addingEnemyLoad = false;
+        }
+
+        addingStartPoint = GUILayout.Toggle(addingStartPoint, "Add Start Point Mode", "Button");
+        if (addingStartPoint)
+        {
+            addingWaypoint = addingEndPoint = addingCube = addingEnemyLoad = false;
+        }
+
+        addingEndPoint = GUILayout.Toggle(addingEndPoint, "Add End Point Mode", "Button");
+        if (addingEndPoint)
+        {
+            addingWaypoint = addingStartPoint = addingCube = addingEnemyLoad = false;
+        }
+
+        addingCube = GUILayout.Toggle(addingCube, "Add Cube Mode", "Button");
+        if (addingCube)
+        {
+            addingWaypoint = addingStartPoint = addingEndPoint = addingEnemyLoad = false;
+        }
+
+        addingEnemyLoad = GUILayout.Toggle(addingEnemyLoad, "Add Enemy Load Mode", "Button");
+        if (addingEnemyLoad)
+        {
+            addingWaypoint = addingStartPoint = addingEndPoint = addingCube = false;
+        }
+
+        // 로드할 맵 인덱스 선택
+        GUILayout.Label("Load Map", EditorStyles.boldLabel);
+        selectedMapIndex = EditorGUILayout.IntField("Map Index", selectedMapIndex);
+
+        // 맵 초기화, 저장, 로드 버튼
+        if (GUILayout.Button("Clear Map"))
+        {
+            ClearMap();
+        }
+
+        if (GUILayout.Button("Save Map"))
+        {
+            mapManager.SaveMapData();
+        }
+
+        if (GUILayout.Button("Load Map"))
+        {
+            mapManager.LoadMapData(selectedMapIndex);
+        }
+    }
+
     private void OnSceneGUI(SceneView sceneView)
     {
+        if (mapManager == null)
+        {
+            mapManager = FindObjectOfType<MapManager>();
+            if (mapManager == null)
+            {
+                Debug.LogError("MapManager not found in the scene.");
+                return;
+            }
+        }
+
         DrawGrid(); // 그리드 그리기
         DrawMapBoundary(); // 맵 경계 그리기
         DrawGridCoordinates(); // 그리드 좌표 표시
@@ -89,10 +168,16 @@ public class MapEditor : Editor
         HandlePositionHandles(); // 오브젝트 이동 핸들 처리
     }
 
+
+
     // 오브젝트 이동 핸들 처리 함수
     private void HandlePositionHandles()
     {
-        for (int i = 0; i < mapManager.Waypoints.Length; i++)
+        if(mapManager.Waypoints == null) return;
+
+        var waypointCount = mapManager.Waypoints.Length;
+
+        for (int i = 0; i < waypointCount; i++)
         {
             if (mapManager.Waypoints[i] != null)
             {
@@ -258,79 +343,18 @@ public class MapEditor : Editor
     // 그리드 좌표를 그리는 함수
     private void DrawGridCoordinates()
     {
-        Handles.color = Color.white;
+        GUIStyle style = new GUIStyle();
+        style.normal.textColor = Color.black;
+        style.alignment = TextAnchor.MiddleCenter;
 
         float gridSize = mapManager.gridSize;
-        for (float x = 0; x <= mapManager.mapSize.x; x += gridSize)
+        for (float x = 0; x < mapManager.mapSize.x; x += gridSize)
         {
-            for (float z = 0; z <= mapManager.mapSize.y; z += gridSize)
+            for (float z = 0; z < mapManager.mapSize.y; z += gridSize)
             {
-                Vector3 position = new Vector3(x, 0, z);
-                Handles.Label(position, $"({x}, {z})");
+                Vector3 position = new Vector3(x + gridSize / 2, 0, z + gridSize / 2);
+                Handles.Label(position, $"({(int)(x / gridSize)}, {(int)(z / gridSize)})", style);
             }
-        }
-    }
-
-    public override void OnInspectorGUI()
-    {
-        DrawDefaultInspector();
-
-        GUILayout.Label("Snap Settings", EditorStyles.boldLabel);
-        snapValue = EditorGUILayout.FloatField("Snap Value", snapValue);
-        minDistance = EditorGUILayout.FloatField("Min Distance", minDistance);
-
-        GUILayout.Label("Map Settings", EditorStyles.boldLabel);
-        mapManager.mapSize = EditorGUILayout.Vector2Field("Map Size", mapManager.mapSize);
-
-        // 각 모드 버튼 설정
-        addingWaypoint = GUILayout.Toggle(addingWaypoint, "Add Waypoint Mode", "Button");
-        if (addingWaypoint)
-        {
-            addingStartPoint = addingEndPoint = addingCube = addingEnemyLoad = false;
-        }
-
-        addingStartPoint = GUILayout.Toggle(addingStartPoint, "Add Start Point Mode", "Button");
-        if (addingStartPoint)
-        {
-            addingWaypoint = addingEndPoint = addingCube = addingEnemyLoad = false;
-        }
-
-        addingEndPoint = GUILayout.Toggle(addingEndPoint, "Add End Point Mode", "Button");
-        if (addingEndPoint)
-        {
-            addingWaypoint = addingStartPoint = addingCube = addingEnemyLoad = false;
-        }
-
-        addingCube = GUILayout.Toggle(addingCube, "Add Cube Mode", "Button");
-        if (addingCube)
-        {
-            addingWaypoint = addingStartPoint = addingEndPoint = addingEnemyLoad = false;
-        }
-
-        addingEnemyLoad = GUILayout.Toggle(addingEnemyLoad, "Add Enemy Load Mode", "Button");
-        if (addingEnemyLoad)
-        {
-            addingWaypoint = addingStartPoint = addingEndPoint = addingCube = false;
-        }
-
-        // 로드할 맵 인덱스 선택
-        GUILayout.Label("Load Map", EditorStyles.boldLabel);
-        selectedMapIndex = EditorGUILayout.IntField("Map Index", selectedMapIndex);
-
-        // 맵 초기화, 저장, 로드 버튼
-        if (GUILayout.Button("Clear Map"))
-        {
-            ClearMap();
-        }
-
-        if (GUILayout.Button("Save Map"))
-        {
-            mapManager.SaveMapData();
-        }
-
-        if (GUILayout.Button("Load Map"))
-        {
-            mapManager.LoadMapData(selectedMapIndex);
         }
     }
 
