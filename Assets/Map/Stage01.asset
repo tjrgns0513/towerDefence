@@ -12,21 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e7dbda85428783e4e8fc4fa6cc0fe84c, type: 3}
   m_Name: Stage01
   m_EditorClassIdentifier: 
-  waypoints:
-  - {x: 34, y: 0, z: 14}
-  startPoint: {x: 6, y: 0, z: 14}
-  endPoint: {x: 34, y: 0, z: 14}
-  cubes:
-  - {x: 10, y: 0, z: 18}
-  - {x: 14, y: 0, z: 18}
-  - {x: 18, y: 0, z: 18}
-  - {x: 22, y: 0, z: 18}
-  - {x: 26, y: 0, z: 18}
-  - {x: 30, y: 0, z: 18}
-  - {x: 30, y: 0, z: 10}
-  - {x: 26, y: 0, z: 10}
-  - {x: 22, y: 0, z: 10}
-  - {x: 18, y: 0, z: 10}
-  - {x: 14, y: 0, z: 10}
-  - {x: 10, y: 0, z: 10}
-  enemyLoads: []
+  layers:
+  - structureLayers: 0100000001000000010000000100000000000000
+  - structureLayers: 0000000000000000000000000100000000000000
+  - structureLayers: 0000000000000000000000000100000000000000

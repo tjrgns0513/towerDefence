@@ -1,5 +1,5 @@
-using UnityEngine;
 using UnityEditor;
+using UnityEngine;
 
 public class MapEditorWindow : EditorWindow
 {
@@ -23,6 +23,7 @@ public class MapEditorWindow : EditorWindow
 
     private void OnEnable()
     {
+        //MapManager.Instance.InitializeMap();
         SceneView.duringSceneGui += OnSceneGUI; // Scene GUI 이벤트 등록
     }
 
@@ -38,10 +39,26 @@ public class MapEditorWindow : EditorWindow
         minDistance = EditorGUILayout.FloatField("Min Distance", minDistance);
 
         GUILayout.Label("Map Settings", EditorStyles.boldLabel);
+
         if (mapManager != null)
         {
-            mapManager.mapSize = EditorGUILayout.Vector2Field("Map Size", mapManager.mapSize);
+            Vector2Int mapSizeVector = new Vector2Int(MapManager.Instance.mapSize.x, MapManager.Instance.mapSize.y);
+
+            var mapSize = EditorGUILayout.Vector2IntField("Map Size", mapSizeVector);
+
+            var mapX = MapManager.Instance.mapSize.x;
+            var mapY = MapManager.Instance.mapSize.y;
+
+            Vector2Int currentMapsize = new Vector2Int(mapX, mapY);
+
+            if (mapSize != currentMapsize)
+            {
+                mapManager.mapSize.x = mapSize.x;
+                mapManager.mapSize.y = mapSize.y;
+                mapManager.MapRefresh();
+            }
         }
+
 
         // 각 모드 버튼 설정
         addingWaypoint = GUILayout.Toggle(addingWaypoint, "Add Waypoint Mode", "Button");
@@ -77,21 +94,25 @@ public class MapEditorWindow : EditorWindow
         // 로드할 맵 인덱스 선택
         GUILayout.Label("Load Map", EditorStyles.boldLabel);
         selectedMapIndex = EditorGUILayout.IntField("Map Index", selectedMapIndex);
+        //MapManager.Instance.currentMapIndex = selectedMapIndex;
 
         // 맵 초기화, 저장, 로드 버튼
         if (GUILayout.Button("Clear Map"))
         {
-            ClearMap();
+            MapManager.Instance.ClearMap();
+            //ClearMap();
         }
 
         if (GUILayout.Button("Save Map"))
         {
-            mapManager.SaveMapData();
+            MapManager.Instance.SaveMapData(selectedMapIndex);
         }
 
         if (GUILayout.Button("Load Map"))
         {
-            mapManager.LoadMapData(selectedMapIndex);
+            //ClearMap();
+            MapManager.Instance.ClearMap();
+            MapManager.Instance.LoadMapData(selectedMapIndex);
         }
     }
 
@@ -137,29 +158,29 @@ public class MapEditorWindow : EditorWindow
             {
                 Vector3 point = ray.GetPoint(distance);
                 point = SnapToGrid(point, snapValue); // 스냅 적용
-                if (addingWaypoint && !IsPositionOccupied(point, "Waypoint"))
+                if (addingWaypoint)
                 {
-                    AddWaypointAtPosition(point);
+                    MapManager.Instance.AddObject(point, MapManager.Instance.waypointPrefab, MapManager.Instance.waypointParent, StructureType.Waypoint, true);
                     e.Use();
                 }
-                else if (addingStartPoint && !IsPositionOccupied(point, "StartPoint"))
+                else if (addingStartPoint)
                 {
-                    AddStartPointAtPosition(point);
+                    MapManager.Instance.AddObject(point, MapManager.Instance.startPointPrefab, MapManager.Instance.startPointParent, StructureType.StartPoint, true);
                     e.Use();
                 }
-                else if (addingEndPoint && !IsPositionOccupied(point, "EndPoint"))
+                else if (addingEndPoint)
                 {
-                    AddEndPointAtPosition(point);
+                    MapManager.Instance.AddObject(point, MapManager.Instance.endPointPrefab, MapManager.Instance.endPointParent, StructureType.EndPoint, true);
                     e.Use();
                 }
-                else if (addingCube && !IsPositionOccupied(point, "Cube"))
+                else if (addingCube)
                 {
-                    AddCubeAtPosition(point);
+                    MapManager.Instance.AddObject(point, MapManager.Instance.cubePrefab, MapManager.Instance.cubeParent, StructureType.Cube, true);
                     e.Use();
                 }
-                else if (addingEnemyLoad && !IsPositionOccupied(point, "EnemyLoad"))
+                else if (addingEnemyLoad)
                 {
-                    AddEnemyLoadAtPosition(point);
+                    MapManager.Instance.AddObject(point, MapManager.Instance.enemyRoadPrefab, MapManager.Instance.enemyRoadParent, StructureType.EnemyRoad, true);
                     e.Use();
                 }
             }
@@ -256,54 +277,54 @@ public class MapEditorWindow : EditorWindow
     }
 
     // 위치가 이미 점유되었는지 확인하는 함수
-    private bool IsPositionOccupied(Vector3 position, string objectType)
-    {
-        if (objectType == "Waypoint")
-        {
-            foreach (Transform waypoint in mapManager.Waypoints)
-            {
-                if (waypoint != null && Vector3.Distance(waypoint.position, position) < minDistance)
-                {
-                    return true;
-                }
-            }
-        }
-        else if (objectType == "StartPoint")
-        {
-            if (mapManager.startPoint != null && Vector3.Distance(mapManager.startPoint.position, position) < minDistance)
-            {
-                return true;
-            }
-        }
-        else if (objectType == "EndPoint")
-        {
-            if (mapManager.endPoint != null && Vector3.Distance(mapManager.endPoint.position, position) < minDistance)
-            {
-                return true;
-            }
-        }
-        else if (objectType == "Cube")
-        {
-            foreach (Transform cube in mapManager.Cubes)
-            {
-                if (cube != null && Vector3.Distance(cube.position, position) < minDistance)
-                {
-                    return true;
-                }
-            }
-        }
-        else if (objectType == "EnemyLoad")
-        {
-            foreach (Transform enemyLoad in mapManager.EnemyLoads)
-            {
-                if (enemyLoad != null && Vector3.Distance(enemyLoad.position, position) < minDistance)
-                {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
+    //private bool IsPositionOccupied(Vector3 position, string objectType)
+    //{
+    //    if (objectType == "Waypoint")
+    //    {
+    //        foreach (Transform waypoint in mapManager.Waypoints)
+    //        {
+    //            if (waypoint != null && Vector3.Distance(waypoint.position, position) < minDistance)
+    //            {
+    //                return true;
+    //            }
+    //        }
+    //    }
+    //    else if (objectType == "StartPoint")
+    //    {
+    //        if (mapManager.startPoint != null && Vector3.Distance(mapManager.startPoint.position, position) < minDistance)
+    //        {
+    //            return true;
+    //        }
+    //    }
+    //    else if (objectType == "EndPoint")
+    //    {
+    //        if (mapManager.endPoint != null && Vector3.Distance(mapManager.endPoint.position, position) < minDistance)
+    //        {
+    //            return true;
+    //        }
+    //    }
+    //    else if (objectType == "Cube")
+    //    {
+    //        foreach (Transform cube in mapManager.Cubes)
+    //        {
+    //            if (cube != null && Vector3.Distance(cube.position, position) < minDistance)
+    //            {
+    //                return true;
+    //            }
+    //        }
+    //    }
+    //    else if (objectType == "EnemyLoad")
+    //    {
+    //        foreach (Transform enemyLoad in mapManager.EnemyLoads)
+    //        {
+    //            if (enemyLoad != null && Vector3.Distance(enemyLoad.position, position) < minDistance)
+    //            {
+    //                return true;
+    //            }
+    //        }
+    //    }
+    //    return false;
+    //}
 
     // 그리드를 그리는 함수
     private void DrawGrid()
@@ -325,7 +346,7 @@ public class MapEditorWindow : EditorWindow
     private void DrawMapBoundary()
     {
         Handles.color = Color.red;
-        Vector3 size = new Vector3(mapManager.mapSize.x, 0, mapManager.mapSize.y);
+        Vector3 size = new Vector3(mapManager.mapSize.x * mapManager.gridSize, 0, mapManager.mapSize.y * mapManager.gridSize);
         Vector3[] corners = new Vector3[4]
         {
             Vector3.zero,
@@ -348,126 +369,16 @@ public class MapEditorWindow : EditorWindow
         style.alignment = TextAnchor.MiddleCenter;
 
         float gridSize = mapManager.gridSize;
-        for (float x = 0; x < mapManager.mapSize.x; x += gridSize)
+        for (float x = 0; x < mapManager.mapSize.x * mapManager.gridSize; x += mapManager.gridSize)
         {
-            for (float z = 0; z < mapManager.mapSize.y; z += gridSize)
+            for (float z = 0; z < mapManager.mapSize.y * mapManager.gridSize; z+= mapManager.gridSize)
             {
                 Vector3 position = new Vector3(x + gridSize / 2, 0, z + gridSize / 2);
+
+
                 Handles.Label(position, $"({(int)(x / gridSize)}, {(int)(z / gridSize)})", style);
             }
         }
-    }
 
-    // 웨이포인트 추가 함수
-    private void AddWaypointAtPosition(Vector3 position)
-    {
-        if (mapManager.waypointPrefab != null)
-        {
-            GameObject waypointObject = Instantiate(mapManager.waypointPrefab, position, Quaternion.identity, mapManager.waypointParent);
-            Undo.RegisterCreatedObjectUndo(waypointObject, "Create Waypoint");
-            waypointObject.name = "Waypoint " + mapManager.waypointParent.childCount;
-            mapManager.InitializeMap();
-        }
-        else
-        {
-            Debug.LogError("Waypoint Prefab is not assigned in MapManager.");
-        }
-    }
-
-    // 시작 위치 추가 함수
-    private void AddStartPointAtPosition(Vector3 position)
-    {
-        if (mapManager.startPoint == null && mapManager.startPointPrefab != null)
-        {
-            GameObject startObject = Instantiate(mapManager.startPointPrefab, position, Quaternion.identity);
-            Undo.RegisterCreatedObjectUndo(startObject, "Create Start Point");
-            startObject.name = "Start Point";
-            mapManager.startPoint = startObject.transform;
-        }
-        else
-        {
-            Debug.LogWarning("Start Point already exists or prefab is not assigned.");
-        }
-    }
-
-    // 끝 위치 추가 함수
-    private void AddEndPointAtPosition(Vector3 position)
-    {
-        if (mapManager.endPoint == null && mapManager.endPointPrefab != null)
-        {
-            GameObject endObject = Instantiate(mapManager.endPointPrefab, position, Quaternion.identity);
-            Undo.RegisterCreatedObjectUndo(endObject, "Create End Point");
-            endObject.name = "End Point";
-            mapManager.endPoint = endObject.transform;
-        }
-        else
-        {
-            Debug.LogWarning("End Point already exists or prefab is not assigned.");
-        }
-    }
-
-    // 큐브 추가 함수
-    private void AddCubeAtPosition(Vector3 position)
-    {
-        if (mapManager.cubePrefab != null)
-        {
-            GameObject cubeObject = Instantiate(mapManager.cubePrefab, position, Quaternion.identity, mapManager.cubeParent);
-            Undo.RegisterCreatedObjectUndo(cubeObject, "Create Cube");
-            cubeObject.name = "Cube " + mapManager.cubeParent.childCount;
-            mapManager.InitializeMap();
-        }
-        else
-        {
-            Debug.LogError("Cube Prefab is not assigned in MapManager.");
-        }
-    }
-
-    // Enemy Load 추가 함수
-    private void AddEnemyLoadAtPosition(Vector3 position)
-    {
-        if (mapManager.enemyLoadPrefab != null)
-        {
-            GameObject enemyObject = Instantiate(mapManager.enemyLoadPrefab, position, Quaternion.identity, mapManager.enemyLoadParent);
-            Undo.RegisterCreatedObjectUndo(enemyObject, "Create Enemy Load");
-            enemyObject.name = "Enemy Load " + mapManager.enemyLoadParent.childCount;
-            mapManager.InitializeMap();
-        }
-        else
-        {
-            Debug.LogError("Enemy Load Prefab is not assigned in MapManager.");
-        }
-    }
-
-    // 맵 초기화 함수
-    private void ClearMap()
-    {
-        for (int i = mapManager.waypointParent.childCount - 1; i >= 0; i--)
-        {
-            Undo.DestroyObjectImmediate(mapManager.waypointParent.GetChild(i).gameObject);
-        }
-
-        for (int i = mapManager.cubeParent.childCount - 1; i >= 0; i--)
-        {
-            Undo.DestroyObjectImmediate(mapManager.cubeParent.GetChild(i).gameObject);
-        }
-
-        for (int i = mapManager.enemyLoadParent.childCount - 1; i >= 0; i--)
-        {
-            Undo.DestroyObjectImmediate(mapManager.enemyLoadParent.GetChild(i).gameObject);
-        }
-
-        if (mapManager.startPoint != null)
-        {
-            Undo.DestroyObjectImmediate(mapManager.startPoint.gameObject);
-            mapManager.startPoint = null;
-        }
-
-        if (mapManager.endPoint != null)
-        {
-            Undo.DestroyObjectImmediate(mapManager.endPoint.gameObject);
-            mapManager.endPoint = null;
-        }
-
-        mapManager.InitializeMap();
     }
 }
