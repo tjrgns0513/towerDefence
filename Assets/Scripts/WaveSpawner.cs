@@ -115,6 +115,6 @@ public class WaveSpawner : MonoBehaviour
 
     private void SetSpawnPoint()
     {
-        spawnPoint = MapManager.Instance.startPoint;
+        //spawnPoint = MapManager.Instance.startPoint;
     }
 }

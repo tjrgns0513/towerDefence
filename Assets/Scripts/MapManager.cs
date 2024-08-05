@@ -2,10 +2,8 @@ using UnityEngine;
 using System;
 using System.Collections.Generic;
 using UnityEditor;
-using static UnityEditor.Experimental.GraphView.GraphView;
-using Unity.VisualScripting;
 using UnityEngine.UIElements;
-using static UnityEditor.PlayerSettings;
+using Unity.VisualScripting;
 
 [Serializable]
 public class MapSize
@@ -24,34 +22,34 @@ public class MapManager : MonoBehaviour
 {
     private static MapManager instance = null;
 
-    public List<MapData> mapManagerList = new List<MapData>(); // MapData 리스트로 맵 데이터 관리
-    //public int currentMapIndex = 0; // 현재 맵 인덱스
-    public Transform startPoint;
-    public Transform endPoint;
+    public List<MapData_ScriptableObject> mapManagerList = new List<MapData_ScriptableObject>(); // MapData 리스트로 맵 데이터 관리
+
     public Transform waypointParent;
     public Transform cubeParent;
     public Transform enemyRoadParent; // Enemy Load Parent 추가
-    public Transform startPointParent;
-    public Transform endPointParent;
     public Transform objectParent;
 
     public GameObject waypointPrefab;
     public GameObject cubePrefab;
-    public GameObject startPointPrefab;
-    public GameObject endPointPrefab;
     public GameObject enemyRoadPrefab;
 
-    //public Vector2 mapSize = new Vector2(100, 100); // 맵 크기
+    public List<Route> routes = new List<Route>();
+
     public MapSize mapSize = new MapSize(10, 10); // 맵 크기
 
     public float gridSize = 4.0f; // 그리드 크기
     public Color gridColor = Color.gray; // 그리드 색상
 
+    private int wayPointIndex;
+    private int groupIndex;
+
+    public Vector2Int waypointIndex;
+
     public Transform[] Waypoints { get; private set; }
     public Transform[] Cubes { get; private set; }
-    public Transform[] EnemyLoads { get; private set; } // Enemy Load 추가
+    public Transform[] EnemyRoads { get; private set; } // Enemy Load 추가
 
-    private MapData currentMapData;
+    public MapData currentMapData;
 
     public static MapManager Instance
     {
@@ -74,37 +72,28 @@ public class MapManager : MonoBehaviour
         }
 
         instance = this;
-        DontDestroyOnLoad(this.gameObject);
-        //InitializeMap();
-    }
 
-    private void Start()
-    {
-        //LoadMapData(currentMapIndex);
     }
 
     // 맵 초기화 함수
     public void InitializeMap(MapData mapData)
     {
-        if (!mapData)
+        if (mapData == null)
             return;
 
-        mapData.layers.Clear();
+        mapData.verticalLines.Clear();
 
         for (int y = 0; y < mapSize.y; y++)
         {
-            MapLayer mapLayer = new MapLayer();
-            mapLayer.structureLayers = new List<StructureType>();
-
+            MapLine mapLayer = new MapLine();
+            mapLayer.horizontalLines = new List<StructureType>();
             for (int x = 0; x < mapSize.x; x++)
             {
-                mapLayer.structureLayers.Add(StructureType.None);
+                mapLayer.horizontalLines.Add(StructureType.None);
             }
 
-            mapData.layers.Add(mapLayer);
+            mapData.verticalLines.Add(mapLayer);
         }
-
-        //MapDataObjectManager.Instance.Init(mapSize.x, mapSize.y);
     }
 
     // 맵 데이터를 로드하는 함수
@@ -116,22 +105,28 @@ public class MapManager : MonoBehaviour
             return;
         }
 
-        //ClearMap();
-        MapDataObjectManager.Instance.Clear();
-        currentMapData = mapManagerList[mapIndex].Clone();
+        //처음 로드하는 맵이면 초기화하는 조건
+        //if (currentMapData.verticalLines.Count == 0)
+        //{
+        //    ClearMap();
+        //}
 
+        MapDataObjectManager.Instance.Clear();
+
+        //mapManagerList[mapIndex].mapData.SetMap(currentMapData);
+        currentMapData = mapManagerList[mapIndex].mapData.Clone();
 
         //로드할때 오브젝트의 x,y좌표의 최대치만큼 맵을 보여주게 변경
-        int mapSizeY = currentMapData.layers.Count;
-        int mapsizeX = currentMapData.layers[0].structureLayers.Count;
+        int mapsizeY = currentMapData.verticalLines.Count;
+        int mapsizeX = currentMapData.verticalLines[0].horizontalLines.Count;
 
-        mapSize = new MapSize(mapsizeX, mapSizeY);
+        mapSize = new MapSize(mapsizeX, mapsizeY);
 
         MapDataObjectManager.Instance.Init(mapSize.x, mapSize.y);
 
-        for (var i = 0; i < currentMapData.layers.Count; ++i)
+        for (var i = 0; i < currentMapData.verticalLines.Count; ++i)
         {
-            var StructureTypes = currentMapData.layers[i].structureLayers;
+            var StructureTypes = currentMapData.verticalLines[i].horizontalLines;
             for (var j = 0; j < StructureTypes.Count; ++j)
             {
                 var x = j;
@@ -143,30 +138,16 @@ public class MapManager : MonoBehaviour
                     var position = CalcPosition(x, y);
                     AddObject(position, cubePrefab, cubeParent, StructureType.Cube);
                 }
-                else if (structureType == StructureType.Waypoint)
-                {
-                    var position = CalcPosition(x, y);
-                    AddObject(position, waypointPrefab, waypointParent, StructureType.Waypoint);
-                }
                 else if (structureType == StructureType.EnemyRoad)
                 {
                     var position = CalcPosition(x, y);
                     AddObject(position, enemyRoadPrefab, enemyRoadParent, StructureType.EnemyRoad);
                 }
-                else if (structureType == StructureType.StartPoint)
-                {
-                    var position = CalcPosition(x, y);
-                    AddObject(position, startPointPrefab, null, StructureType.StartPoint);
-                }
-                else if (structureType == StructureType.EndPoint)
-                {
-                    var position = CalcPosition(x, y);
-                    AddObject(position, enemyRoadPrefab, enemyRoadParent, StructureType.EnemyRoad);
-                }
-                else
-                {
-                    structureType = StructureType.None;
-                }
+                //else if (structureType == StructureType.Waypoint)
+                //{
+                //    var position = CalcPosition(x, y);
+                //    AddObject(position, waypointPrefab, waypointParent, StructureType.Waypoint);
+                //}
             }
         }
 
@@ -182,9 +163,9 @@ public class MapManager : MonoBehaviour
     }
 
     //맵에 오브젝트 추가하는 함수
-    public void AddObject(Vector3 position, GameObject prefabs, Transform parent, StructureType type, bool isCreated = false)
+    public void AddObject(Vector3 position, GameObject prefabs, Transform parent, StructureType type, bool check = false)
     {
-        if (!currentMapData)
+        if (currentMapData == null)
             return;
 
         if (!prefabs) {
@@ -196,41 +177,137 @@ public class MapManager : MonoBehaviour
 
         int x = Mathf.FloorToInt(position.x / gridSize);
         int y = Mathf.FloorToInt(position.z / gridSize);
-        if (y < 0 || mapData.layers.Count <= y)
-            return;
-        if (x < 0 || mapData.layers[y].structureLayers.Count <= x)
-            return;
-        if (mapData.layers[y].structureLayers[x] == type && isCreated)
-            return;
 
-        if (mapData.layers[y].structureLayers[x] != type)
+        if (y < 0 || mapData.verticalLines.Count <= y)
+            return;
+        if (x < 0 || mapData.verticalLines[y].horizontalLines.Count <= x)
+            return;
+        
+        if(check && mapData.verticalLines[y].horizontalLines[x] == type)
         {
-            if(mapData.layers[y].structureLayers[x] != StructureType.None && MapDataObjectManager.Instance.objects[y][x] != null)
+            return;
+        }
+           
+        //덮어쓰기
+        if (mapData.verticalLines[y].horizontalLines[x] != type)
+        {
+            if(mapData.verticalLines[y].horizontalLines[x] != StructureType.None && MapDataObjectManager.Instance.objects[y][x] != null)
             {
                 Undo.DestroyObjectImmediate(MapDataObjectManager.Instance.objects[y][x]);
             }           
         }
 
-        GameObject obj = Instantiate(prefabs, position, Quaternion.identity, objectParent);
+        //오브젝트 생성
+        GameObject obj = Instantiate(prefabs, position, Quaternion.identity, parent);
         Undo.RegisterCreatedObjectUndo(obj, "Create Object");
         obj.name = ($"{prefabs.name}");
-        mapData.layers[y].structureLayers[x] = type;
-
+        mapData.verticalLines[y].horizontalLines[x] = type;
         MapDataObjectManager.Instance.objects[y][x] = obj;
 
-        //GameObject mapObj = MapDataObjectManager.Instance.objects[y][x];
+    }
 
-        //mapObj = Instantiate(prefabs, position, Quaternion.identity, objectParent);
-        //Undo.RegisterCreatedObjectUndo(mapObj, "Create Object");
-        //mapObj.name = ($"{prefabs.name}");// + objectParent.childCount);
-        //mapData.layers[y].structureLayers[x] = type;
+    public void AddWayPoint(Vector2Int waypoint, Vector3 position, int waypointIndex, int groupIndex, GameObject prefabs, Transform parent, bool check = false)
+    {
+
+        MapData mapData = currentMapData;
+
+        int x = Mathf.FloorToInt(position.x / gridSize);
+        int y = Mathf.FloorToInt(position.z / gridSize);
+
+        if (routes.Count <= groupIndex)
+        {
+            Route route = new Route();
+            routes.Add(route);
+        }
+
+        //if (routes[groupIndex].waypointIndex != null)
+        //{
+        //    if (routes[groupIndex].waypointIndex[wayPointIndex] != null)
+        //    {
+        //        Undo.DestroyObjectImmediate(MapDataObjectManager.Instance.objects[y][x]);
+        //        MapDataObjectManager.Instance.objects[y][x] = null;
+
+        //        return;
+        //    }
+        //}
+
+        Debug.Log("wayPointIndex : " + wayPointIndex);
+
+        if (routes[groupIndex].waypointIndex.Count > wayPointIndex)
+        {
+            var xy = routes[groupIndex].waypointIndex[wayPointIndex];
+            Undo.DestroyObjectImmediate(MapDataObjectManager.Instance.objects[xy.y][xy.x]);
+            // MapDataObjectManager.Instance.objects[y][x] = null;
+        }
+
+
+        if (routes[groupIndex].waypointIndex.Contains(waypoint))
+        {
+            return;
+        }
+        else
+        {
+            routes[groupIndex].waypointIndex.Add(waypoint);
+        }
+
+        //if (routes[groupIndex].waypointIndex[waypointIndex] == routes[groupIndex].waypointIndex)
+        //{
+        //    Undo.DestroyObjectImmediate(MapDataObjectManager.Instance.objects[y][x]);
+        //    MapDataObjectManager.Instance.objects[y][x] = null;
+
+        //    return;
+        //}
+
+        for (int i = 0; i < routes[groupIndex].waypointIndex.Count; i++)
+        {
+            Debug.Log("routes : " + routes[groupIndex].waypointIndex[i]);
+        }
+
+        //오브젝트 생성
+        GameObject obj = Instantiate(prefabs, position, Quaternion.identity, parent);
+        Undo.RegisterCreatedObjectUndo(obj, "Create Object");
+        obj.name = ($"{prefabs.name}");
+        MapDataObjectManager.Instance.objects[y][x] = obj;
+    }
+
+    public void DeleteObject(Vector3 position, bool isCreated = false)
+    {
+        if (currentMapData == null)
+            return;
+
+        MapData mapData = currentMapData;
+
+        int x = Mathf.FloorToInt(position.x / gridSize);
+        int y = Mathf.FloorToInt(position.z / gridSize);
+        if (y < 0 || mapData.verticalLines.Count <= y)
+            return;
+        if (x < 0 || mapData.verticalLines[y].horizontalLines.Count <= x)
+            return;
+        if (mapData.verticalLines[y].horizontalLines[x] == StructureType.None && !isCreated)
+            return;
+
+        if (mapData.verticalLines[y].horizontalLines[x] != StructureType.None && MapDataObjectManager.Instance.objects[y][x] != null)
+        {
+            Undo.DestroyObjectImmediate(MapDataObjectManager.Instance.objects[y][x]);
+        }
+
+        mapData.verticalLines[y].horizontalLines[x] = StructureType.None;
+        MapDataObjectManager.Instance.objects[y][x] = null;
     }
 
     // 기존 오브젝트를 제거하는 함수
     public void ClearMap()
     {
-        MapDataObjectManager.Instance.Clear();
         InitializeMap(currentMapData);
+        ClearData();
+
+        routes.Clear();
+    }
+
+    public void ClearData()
+    {
+        MapDataObjectManager.Instance.Clear();
+        MapDataObjectManager.Instance.Init(mapSize.x, mapSize.y);
     }
 
     // 맵 데이터를 저장하는 함수
@@ -242,8 +319,7 @@ public class MapManager : MonoBehaviour
             return;
         }
 
-
-        mapManagerList[mapIndex].SetMap(currentMapData);
+        mapManagerList[mapIndex].mapData.SetMap(currentMapData);
 
         LoadMapData(mapIndex);
         Debug.Log($"{mapManagerList[mapIndex]} 번맵 저장 완료");
@@ -252,74 +328,56 @@ public class MapManager : MonoBehaviour
         UnityEditor.EditorUtility.SetDirty(mapManagerList[mapIndex]);
         AssetDatabase.SaveAssets();
 #endif
-        //}
     }
 
     //기존 맵을 저장해두고 x,y사이즈 초기화한후 다시 넣어준다
     internal void MapRefresh()
     {
-        var newMap = ScriptableObject.CreateInstance<MapData>();
-        newMap.layers = new List<MapLayer>();
-
-        //MapDataObjectManager.Instance.CloneInit();
-        
-        
+        var newMap = new MapData();
+        newMap.verticalLines = new List<MapLine>();
         InitializeMap(newMap);
+        ClearData();
         newMap.SetMapData(currentMapData);
-
-
-        //GetMapObjectData();
-        
-        
         currentMapData = newMap;
-
-
-        //
-
-
-        //var newMap = ScriptableObject.CreateInstance<MapData>();
-        //newMap.layers = new List<MapLayer>();
-        //
-        //MapDataObjectManager.Instance.Init(mapSize.x,mapSize.y);
-        //MapDataObjectManager.Instance.CopyObjects(mapSize.x, mapSize.y);
-
-
-        //MapDataObjectManager.Instance.CloneInit();
-        //InitializeMap(newMap);
-        //newMap.SetMapData(currentMapData);
-        //GetMapObjectData();
-        //currentMapData = newMap;
     }
 
-    public void GetMapObjectData()
+    public void SetWayPointIndex(int index)
     {
-        for (var y = 0; y < MapDataObjectManager.Instance.objects.Count; y++)
-        {
-            for (var x = 0; x < MapDataObjectManager.Instance.objects[y].Count; x++)
-            {
-                if (currentMapData.layers[y].structureLayers[x] == StructureType.Cube)
-                {
-                    var pos = MapDataObjectManager.Instance.objectsClone[y][x].transform.position;
+        wayPointIndex = index;
+    }
 
+    public int GetWayPointIndex()
+    {
+        return wayPointIndex;
+    }
 
-                    AddObject(pos, MapDataObjectManager.Instance.objectsClone[y][x].gameObject, objectParent, StructureType.Cube);
+    public void GetGroupIndex(int index)
+    {
+        groupIndex = index;
+    }
 
-                    
+    //중복되는 웨이포인트 삭제
+    //public void FindDuplicateWayPoint(int index)
+    //{
+    //    for (int y = 0; y < currentMapData.layers.Count; y++)
+    //    {
+    //        for (int x = 0; x < currentMapData.layers[y].waypointIndexs.Count; x++)
+    //        {
+    //            if (currentMapData.layers[y].waypointIndexs[x] == index)
+    //            {
+    //                currentMapData.layers[y].waypointIndexs[x] = -1;
+    //                currentMapData.layers[y].structureLayers[x] = StructureType.None;
+    //                Undo.DestroyObjectImmediate(MapDataObjectManager.Instance.objects[y][x]);
+    //                MapDataObjectManager.Instance.objects[y][x] = null;
+    //            }
+    //        }
+    //    }
+    //}
 
-                    //GameObject obj = Instantiate(cubePrefab, pos, Quaternion.identity, objectParent);
-                    //Undo.RegisterCreatedObjectUndo(obj, "Create Object");
-                    //obj.name = ($"{cubePrefab.name}");
-                    //currentMapData.layers[y].structureLayers[x] = StructureType.Cube;
-                    //MapDataObjectManager.Instance.objects[y][x] = obj;
-                }
-                else
-                {
-                    var pos = MapDataObjectManager.Instance.objectsClone[y][x].transform.position;
-
-
-                    AddObject(pos, MapDataObjectManager.Instance.objectsClone[y][x].gameObject, objectParent, StructureType.None);
-                }
-            }
-        }
+    //리로드 할때 초기화
+    public void OnCompilationFinished(object obj)
+    { 
+        ClearData();
+        ClearMap();
     }
 }

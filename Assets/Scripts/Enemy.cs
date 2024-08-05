@@ -4,6 +4,7 @@ using UnityEngine.UI;
 public class Enemy : MonoBehaviour
 {
     private Transform targetTr;
+
     [SerializeField]
     private int wavepointIndex = 0;
     public bool isDead = false;
@@ -26,9 +27,11 @@ public class Enemy : MonoBehaviour
         maxHealth = enemyType.maxHealth;
         currentHealth = maxHealth;
 
-        if (MapManager.Instance != null && MapManager.Instance.Waypoints.Length > 0)
+        if (MapManager.Instance != null && MapManager.Instance.waypointParent.childCount > 0)
         {
-            targetTr = MapManager.Instance.Waypoints[0];
+            targetTr = MapManager.Instance.waypointParent.GetChild(0);
+
+            //targetTr = MapManager.Instance.Waypoints[0];
         }
     }
 
@@ -42,9 +45,9 @@ public class Enemy : MonoBehaviour
     {
         float moveDist = deltaTime * speed;
 
-        while (moveDist > 0 && wavepointIndex >= 0 && wavepointIndex < MapManager.Instance.Waypoints.Length)
+        while (moveDist > 0 && wavepointIndex >= 0 && wavepointIndex < MapManager.Instance.waypointParent.childCount)
         {
-            if (MapManager.Instance.Waypoints[wavepointIndex] == null)
+            if (MapManager.Instance.waypointParent.GetChild(wavepointIndex) == null)
             {
                 // 웨이포인트가 유효하지 않으면 경로 이동을 멈춤
                 Debug.Log("wavepointIndex : " + wavepointIndex);
@@ -52,14 +55,14 @@ public class Enemy : MonoBehaviour
                 return;
             }
 
-            Vector3 targetPos = MapManager.Instance.Waypoints[wavepointIndex].position;
+            Vector3 targetPos = MapManager.Instance.waypointParent.GetChild(wavepointIndex).position;
             Vector3 moveDir = (targetPos - transform.position).normalized;
             float distToCurTarget = Vector3.Distance(transform.position, targetPos);
 
             if (distToCurTarget < waypointThreshold)
             {
                 wavepointIndex++;
-                if (wavepointIndex >= MapManager.Instance.Waypoints.Length)
+                if (wavepointIndex >= MapManager.Instance.waypointParent.childCount)
                 {
                     ReachEndOfPath();
                     return;

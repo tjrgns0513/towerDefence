@@ -6,66 +6,71 @@ public enum StructureType
 {
     None,
     Cube,
-    StartPoint,
-    EndPoint,
-    Waypoint,
     EnemyRoad,
 }
 
-[CreateAssetMenu(fileName = "MapData", menuName = "ScriptableObjects/MapData", order = 1)]
-public class MapData : ScriptableObject
+[Serializable]
+public class MapData
 {
-    //public List<List<StructureType>> mapDataList;
-
-    public List<MapLayer> layers;
+    public List<MapLine> verticalLines;
+    public List<Vector2Int> waypoints;
 
     public void SetMapData(MapData newMapData)
     {
-        for (var i = 0; i < newMapData.layers.Count; ++i)
+        for (var i = 0; i < newMapData.verticalLines.Count; ++i)
         {
-            if (layers.Count <= i)
+            if (verticalLines.Count <= i)
                 continue;
-            var layer  = layers[i];
-            var newlayer = newMapData.layers[i];
-            for (var j = 0; j < newlayer.structureLayers.Count; ++j)
+            var layer = verticalLines[i];
+            var newlayer = newMapData.verticalLines[i];
+            for (var j = 0; j < newlayer.horizontalLines.Count; ++j)
             {
-                if (layer.structureLayers.Count <= j)
-                    continue; 
-                layer.structureLayers[j] = newlayer.structureLayers[j];
+                if (layer.horizontalLines.Count <= j)
+                    continue;
+                layer.horizontalLines[j] = newlayer.horizontalLines[j];
             }
         }
     }
 
     public void SetMap(MapData mapData)
     {
-        layers = mapData.Clone().layers;
+        verticalLines = mapData.Clone().verticalLines;
     }
 
     public MapData Clone()
     {
-        var newMapData = CreateInstance<MapData>();
-        newMapData.layers = new List<MapLayer>();
+        var newMapData = new MapData();
+        newMapData.verticalLines = new List<MapLine>();
 
-        foreach (var layer in layers)
+        foreach (var layer in verticalLines)
         {
-            var newMapLayer = new MapLayer();
-            newMapLayer.structureLayers = new List<StructureType>();
-            newMapData.layers.Add(newMapLayer);
-            foreach (var type in layer.structureLayers)
+            var newMapLayer = new MapLine();
+            newMapLayer.horizontalLines = new List<StructureType>();
+            newMapData.verticalLines.Add(newMapLayer);
+            foreach (var type in layer.horizontalLines)
             {
-                newMapLayer.structureLayers.Add(type);
+                newMapLayer.horizontalLines.Add(type);
             }
         }
 
         return newMapData;
     }
+}
 
 
+[CreateAssetMenu(fileName = "MapData", menuName = "ScriptableObjects/MapData", order = 1)]
+public class MapData_ScriptableObject : ScriptableObject
+{
+    public MapData mapData;
 }
 
 [Serializable]
-public class MapLayer
+public class MapLine
 {
-    [SerializeField]
-    public List<StructureType> structureLayers;
+    public List<StructureType> horizontalLines;
+}
+
+public class Route
+{
+    public List<Vector2Int> waypointIndex = new List<Vector2Int>();
 }

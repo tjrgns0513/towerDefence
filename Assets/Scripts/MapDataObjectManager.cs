@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
 
 public class MapDataObjectManager : MonoBehaviour
@@ -25,8 +24,9 @@ public class MapDataObjectManager : MonoBehaviour
     }
 
     public List<List<GameObject>> objects = new List<List<GameObject>>();
-    public List<List<GameObject>> objectsClone;
 
+    //public Dictionary<int, Dictionary<Vector2Int, GameObject>> objects;
+    public List<List<GameObject>> objectsClone;
 
     private void Awake()
     {
@@ -55,33 +55,12 @@ public class MapDataObjectManager : MonoBehaviour
             objects.Add(ylist);
         }
 
-        //for (var k = 0; k < objects.Count; k++)
-        //{
-        //    for (var l = 0; l < objects.Count; l++)
-        //    {
-        //        Debug.Log($"Object_{l}_{k}" + objects[k][l]);
-        //    }
-        //}
     }
 
     public void Clear()
     {
         objects.ForEach(o => o.ForEach(o2 => DestroyImmediate(o2)));
-
-        //for (int i = 0; i < objects.Count; i++)
-        //{
-        //    var list = objects[i];
-        //    for (int j = 0; j < list.Count; j++)
-        //    {
-        //        var obj = list[j];
-        //        if (obj != null)
-        //        {
-        //            DestroyImmediate(obj); // 기존 게임 오브젝트 삭제
-        //        }
-        //    }
-        //}
-
-        objects.Clear(); // 리스트 비우기
+        objects.Clear();
     }
 
     public void Init()

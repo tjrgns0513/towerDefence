@@ -1,11 +1,8 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using Unity.VisualScripting;
 using UnityEditor;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 
 public class Test : MonoBehaviour
@@ -19,7 +16,7 @@ public class Test : MonoBehaviour
 
         testclasses[0].testTypes[0] = StructureType.EnemyRoad;
 
-        testclasses1[1].testTypes[0] = StructureType.EndPoint;
+        //testclasses1[1].testTypes[0] = StructureType.EndPoint;
 
         //for (int i = 0; i < testclasses.Count; i++)
         //{
@@ -39,6 +36,7 @@ public class Test : MonoBehaviour
         //waypoint -> waypoint
         // cube -> endpoint
         // enemylaod -> enemylaod
+
         int []testArray = { 1, 2, 3 };
         foreach(var text in testArray)
         {
@@ -64,7 +62,7 @@ public class Test : MonoBehaviour
     {
         var testclasses = new List<TestClass>();
 
-        testclasses.Add(new TestClass() { testTypes = new List<StructureType>() { StructureType.Waypoint} });
+       // testclasses.Add(new TestClass() { testTypes = new List<StructureType>() { StructureType.Waypoint} });
         testclasses.Add(new TestClass() { testTypes = new List<StructureType>() { StructureType.Cube} });
         testclasses.Add(new TestClass() { testTypes = new List<StructureType>() { StructureType.EnemyRoad} });
 
