@@ -13,28 +13,58 @@ public enum StructureType
 public class MapData
 {
     public List<MapLine> verticalLines;
-    public List<Vector2Int> waypoints;
+    //public List<Vector2Int> waypoints;
+    public List<Route> routes;
 
-    public void SetMapData(MapData newMapData)
+
+    public void SetMapData(MapData newMapData, List<Route> routes)
     {
-        for (var i = 0; i < newMapData.verticalLines.Count; ++i)
+        //for (var i = 0; i < newMapData.verticalLines.Count; ++i)
+        //{
+        //    if (verticalLines.Count <= i)
+        //        continue;
+        //    var layer = verticalLines[i];
+        //    var newlayer = newMapData.verticalLines[i];
+        //    for (var j = 0; j < newlayer.horizontalLines.Count; ++j)
+        //    {
+        //        if (layer.horizontalLines.Count <= j)
+        //            continue;
+        //        layer.horizontalLines[j] = newlayer.horizontalLines[j];
+        //    }
+        //}
+
+        for (var i = 0; i < MapManager.Instance.mapSize.y; ++i)
         {
-            if (verticalLines.Count <= i)
+            if (verticalLines.Count <= i || newMapData.verticalLines.Count <= i)
                 continue;
             var layer = verticalLines[i];
             var newlayer = newMapData.verticalLines[i];
-            for (var j = 0; j < newlayer.horizontalLines.Count; ++j)
+            for (var j = 0; j < MapManager.Instance.mapSize.x; ++j)
             {
-                if (layer.horizontalLines.Count <= j)
+                if (layer.horizontalLines.Count <= j || newlayer.horizontalLines.Count <= j)
                     continue;
                 layer.horizontalLines[j] = newlayer.horizontalLines[j];
             }
         }
+
+        var newRoutes = new List<Route>();
+        foreach (var route in routes)
+        {
+            var newRoute = new Route();
+            route.waypointCoordinates.ForEach(w =>
+            {
+                newRoute.waypointCoordinates.Add(w);
+            });
+            newRoutes.Add(newRoute);
+        }
+        this.routes = newRoutes;
     }
 
     public void SetMap(MapData mapData)
     {
-        verticalLines = mapData.Clone().verticalLines;
+        var clone = mapData.Clone();
+        verticalLines = clone.verticalLines;
+        routes = clone.routes;
     }
 
     public MapData Clone()
@@ -53,15 +83,22 @@ public class MapData
             }
         }
 
+        var newRoutes = new List<Route>();
+        foreach (var route in this.routes)
+        {
+            var newRoute = new Route();
+            route.waypointCoordinates.ForEach(w =>
+            {
+                newRoute.waypointCoordinates.Add(w);
+            });
+            newRoutes.Add(newRoute);
+        }
+        newMapData.routes = newRoutes;
+
         return newMapData;
     }
-}
 
 
-[CreateAssetMenu(fileName = "MapData", menuName = "ScriptableObjects/MapData", order = 1)]
-public class MapData_ScriptableObject : ScriptableObject
-{
-    public MapData mapData;
 }
 
 [Serializable]
@@ -70,7 +107,13 @@ public class MapLine
     public List<StructureType> horizontalLines;
 }
 
+[Serializable]
 public class Route
 {
-    public List<Vector2Int> waypointIndex = new List<Vector2Int>();
+    public List<Vector2Int> waypointCoordinates = new List<Vector2Int>();
+
+    public int GetWayPointCount()
+    { 
+        return waypointCoordinates.Count; 
+    }
 }

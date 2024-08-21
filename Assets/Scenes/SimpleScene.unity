@@ -859,50 +859,6 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 3028902733617072914, guid: 06903c008a5f29e4dbe5c61ba996300e, type: 3}
   m_PrefabInstance: {fileID: 73389184}
   m_PrefabAsset: {fileID: 0}
---- !u!1 &77111252
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 77111254}
-  - component: {fileID: 77111253}
-  m_Layer: 0
-  m_Name: MapDataObjectManager
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &77111253
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 77111252}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7a27298fd52e6d142be1fe49a7f68611, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
---- !u!4 &77111254
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 77111252}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &77232615
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -8931,7 +8887,7 @@ Transform:
   m_GameObject: {fileID: 963194225}
   serializedVersion: 2
   m_LocalRotation: {x: 0.60876137, y: 0, z: 0, w: 0.7933534}
-  m_LocalPosition: {x: 30, y: 50, z: 15}
+  m_LocalPosition: {x: 20, y: 50, z: 10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -9052,7 +9008,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 989841426}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -12829,34 +12785,31 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   mapManagerList:
-  - {fileID: 11400000, guid: 8769a397324166743900bb1cb851d3ed, type: 2}
-  - {fileID: 11400000, guid: 672467ceee646964b94916caed69146e, type: 2}
+  - {fileID: 11400000, guid: c7c477eb9c381ce40a5d784525156af6, type: 2}
+  - {fileID: 11400000, guid: 7a94583de996def4da816bb6897b7f8d, type: 2}
+  - {fileID: 11400000, guid: 0a3e451a0047de44ca20faa96d9546c6, type: 2}
+  - {fileID: 11400000, guid: d3d6f4a961d48cc4e8264e5918ab0610, type: 2}
+  mapEditorIndexStorage: {fileID: 11400000, guid: 6844d63f725bb1940aad42bd50f52fb9, type: 2}
+  mapEditorUndoStorages: {fileID: 0}
   waypointParent: {fileID: 1494751242}
-  cubeParent: {fileID: 786674029}
-  enemyRoadParent: {fileID: 1374021891}
   objectParent: {fileID: 1951803222}
   waypointPrefab: {fileID: 6142913242073603950, guid: 260bc79f3b82a2d4781f54e4000e1d61, type: 3}
   cubePrefab: {fileID: 6073635759084412856, guid: 06903c008a5f29e4dbe5c61ba996300e, type: 3}
   enemyRoadPrefab: {fileID: 4292838906562206615, guid: 20a4ecf88830f064fb119836d2716655, type: 3}
   mapSize:
-    x: 10
-    y: 10
+    x: 5
+    y: 5
   gridSize: 4
   gridColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
-  waypointIndex: {x: 0, y: 0}
   currentMapData:
     verticalLines:
-    - horizontalLines: 00000000000000000000000000000000000000000000000000000000000000000000000000000000
-    - horizontalLines: 00000000000000000000000000000000000000000000000000000000000000000000000000000000
-    - horizontalLines: 00000000000000000000000000000000000000000000000000000000000000000000000000000000
-    - horizontalLines: 00000000000000000000000000000000000000000000000000000000000000000000000000000000
-    - horizontalLines: 00000000000000000000000000000000000000000000000000000000000000000000000000000000
-    - horizontalLines: 00000000000000000000000000000000000000000000000000000000000000000000000000000000
-    - horizontalLines: 00000000000000000000000000000000000000000000000000000000000000000000000000000000
-    - horizontalLines: 00000000000000000000000000000000000000000000000000000000000000000000000000000000
-    - horizontalLines: 00000000000000000000000000000000000000000000000000000000000000000000000000000000
-    - horizontalLines: 00000000000000000000000000000000000000000000000000000000000000000000000000000000
-    waypoints: []
+    - horizontalLines: 0000000000000000000000000000000000000000
+    - horizontalLines: 0000000000000000000000000000000000000000
+    - horizontalLines: 0000000000000000000000000000000000000000
+    - horizontalLines: 0000000000000000000000000000000000000000
+    - horizontalLines: 0000000000000000000000000000000000000000
+    routes:
+    - waypointCoordinates: []
 --- !u!4 &1587428976
 Transform:
   m_ObjectHideFlags: 0
@@ -17368,12 +17321,11 @@ SceneRoots:
   - {fileID: 295516519}
   - {fileID: 249777165}
   - {fileID: 1624237773}
-  - {fileID: 989841427}
   - {fileID: 1641676001}
+  - {fileID: 989841427}
   - {fileID: 1972809082}
   - {fileID: 839804313}
   - {fileID: 786674029}
   - {fileID: 1494751242}
   - {fileID: 1374021891}
-  - {fileID: 77111254}
   - {fileID: 1951803222}

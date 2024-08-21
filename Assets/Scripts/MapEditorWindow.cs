@@ -1,21 +1,47 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEditor;
 using UnityEditor.Compilation;
 using UnityEngine;
-using static UnityEngine.GraphicsBuffer;
 
 public class MapEditorWindow : EditorWindow
 {
     private MapManager mapManager;
+
+    public MapEditorIndexStorage mapEditorIndexStorages;
+    public MapEditorUndoStorage mapEditorUndoStorages;
+
     private bool addingWaypoint = false;
     private bool addingCube = false;
     private bool addingEnemyRoad = false;
     private bool deleteObejct = false;
 
     private float snapValue = 4.0f; // 스냅 간격
-    private float minDistance = 0.1f; // 오브젝트가 이미 있는지 확인하는 최소 거리
+    //private float minDistance = 0.1f; // 오브젝트가 이미 있는지 확인하는 최소 거리
     private int selectedMapIndex = 0; // 로드할 맵 인덱스
-    private int groupIndex = 0; // 그룹 인덱스 ( startpoint , endpoint , waypoint 하나의 그룹의 대한 인덱스 )
-    private int wayPointIndex = 0; // 웨이 포인트 인덱스
+    private Vector2Int mapSize;
+
+    private List<LabelInfo> waypointLabelInfos = new List<LabelInfo>();
+
+    private Color[] groupColors = new Color[] {
+        Color.red, Color.green, Color.blue, Color.white, Color.black, Color.yellow, Color.cyan, Color.magenta, Color.gray, Color.grey, Color.clear
+    };
+    private Color GetGroupColor(int gidx)
+    {
+        if (0 <= gidx && gidx < groupColors.Length)
+            return groupColors[gidx];
+        return Color.white;
+    }
+
+    public class LabelInfo
+    {
+        public int labelGroupIndex;
+        public List<Vector2Int> labelPosition = new List<Vector2Int>();
+        public string labelText;
+    }
+
 
     [MenuItem("Window/Map Editor")]
     public static void ShowWindow()
@@ -23,40 +49,29 @@ public class MapEditorWindow : EditorWindow
         GetWindow<MapEditorWindow>("Map Editor");
     }
 
-
     private void OnEnable()
-    { 
+    {
         SceneView.duringSceneGui += OnSceneGUI; // Scene GUI 이벤트 등록
 
         CompilationPipeline.compilationFinished += MapManager.Instance.OnCompilationFinished;
-
         MapManager.Instance.LoadMapData(0);
+        SetWaypointLabelInfos(MapManager.Instance.currentMapData.routes);
     }
 
     private void OnDisable()
     {
         CompilationPipeline.compilationFinished -= MapManager.Instance.OnCompilationFinished;
-
         SceneView.duringSceneGui -= OnSceneGUI; // Scene GUI 이벤트 해제
     }
 
     private void OnGUI()
     {
-        GUILayout.Label("Data Settings", EditorStyles.boldLabel);
-        groupIndex = EditorGUILayout.IntField("Group Index", groupIndex);
-        snapValue = EditorGUILayout.FloatField("Snap Value", snapValue);
-        minDistance = EditorGUILayout.FloatField("Min Distance", minDistance);
-
         GUILayout.Label("Map Settings", EditorStyles.boldLabel);
-
-        MapManager.Instance.GetGroupIndex(groupIndex);
 
         //맵사이즈 조절
         if (mapManager != null)
         {
-            Vector2Int mapSizeVector = new Vector2Int(MapManager.Instance.mapSize.x, MapManager.Instance.mapSize.y);
-
-            var mapSize = EditorGUILayout.Vector2IntField("Map Size", mapSizeVector);
+            mapSize = EditorGUILayout.Vector2IntField("Map Size", mapSize);
 
             var mapX = MapManager.Instance.mapSize.x;
             var mapY = MapManager.Instance.mapSize.y;
@@ -65,47 +80,124 @@ public class MapEditorWindow : EditorWindow
 
             if (mapSize != currentMapsize)
             {
-                mapManager.mapSize.x = mapSize.x;
-                mapManager.mapSize.y = mapSize.y;
-                mapManager.MapRefresh();
+                GUILayout.BeginHorizontal();
+                GUILayout.Space(10);
+
+                if (GUILayout.Button("Modify", GUILayout.Width(150f)))
+                {
+                    if (mapSize != currentMapsize)
+                    {
+                        Undo.RecordObject(mapManager, "Modify Map Size");
+                        MapManager.Instance.mapSize.x = mapSize.x;
+                        MapManager.Instance.mapSize.y = mapSize.y;
+                        MapManager.Instance.MapRefresh();
+                    }
+                }
+
+                GUILayout.BeginHorizontal();
+
+                if (GUILayout.Button("Cancel", GUILayout.Width(150f)))
+                {
+                    mapSize.x = MapManager.Instance.mapSize.x;
+                    mapSize.y = MapManager.Instance.mapSize.y;
+                    Repaint();
+
+                }
+
+
+                GUILayout.EndHorizontal();
+                GUILayout.EndHorizontal();
             }
+
         }
+
+        GUILayout.Space(20);
+        GUILayout.Label("Edit Mode", EditorStyles.boldLabel);
+
+        //snapValue = EditorGUILayout.FloatField("Snap Value", snapValue);
+        //minDistance = EditorGUILayout.FloatField("Min Distance", minDistance);
 
         // 각 모드 버튼 설정
-        addingWaypoint = GUILayout.Toggle(addingWaypoint, "Add Waypoint Mode", "Button");
-        if (addingWaypoint)
-        {
-            addingCube = addingEnemyRoad = deleteObejct = false;
-
-            GUILayout.BeginHorizontal();
-            GUILayout.Label("Waypoint Index: ");
-            string indexString = GUILayout.TextField(wayPointIndex.ToString(), GUILayout.Width(50));
-            int.TryParse(indexString, out wayPointIndex); // 입력된 텍스트를 인덱스로 변환
-            MapManager.Instance.SetWayPointIndex(wayPointIndex);
-            GUILayout.EndHorizontal();
-
-            
-        }
-
-        addingCube = GUILayout.Toggle(addingCube, "Add Cube Mode", "Button");
+        addingCube = GUILayout.Toggle(addingCube, "Edit Cube Mode", "Button");
         if (addingCube)
         {
-            addingWaypoint = addingEnemyRoad = deleteObejct = false;
+            addingWaypoint = addingEnemyRoad = false;
         }
 
-        addingEnemyRoad = GUILayout.Toggle(addingEnemyRoad, "Add Enemy Road Mode", "Button");
+        addingEnemyRoad = GUILayout.Toggle(addingEnemyRoad, "Edit Enemy Road Mode", "Button");
         if (addingEnemyRoad)
         {
-            addingWaypoint = addingCube = deleteObejct = false;
+            addingWaypoint = addingCube = false;
         }
 
-        deleteObejct = GUILayout.Toggle(deleteObejct, "Delete Object Mode", "Button");
-        if (deleteObejct)
+        addingWaypoint = GUILayout.Toggle(addingWaypoint, "Edit Waypoint Mode", "Button");
+        if (addingWaypoint)
         {
-            addingWaypoint = addingCube = addingEnemyRoad = false;
+            addingCube = addingEnemyRoad = false;
+
+            GUILayout.BeginHorizontal();
+            GUILayout.FlexibleSpace();
+            GUILayout.Label("      Group Index: ");
+
+            if (GUILayout.Button("◄", GUILayout.Width(30)))
+            {
+                mapEditorIndexStorages.groupIndex--;
+
+                if (mapEditorIndexStorages.groupIndex < 0)
+                {
+                    mapEditorIndexStorages.groupIndex = 0;
+                }
+
+                MapManager.Instance.SetRouteCount();
+            }
+
+            string groupIndexString = GUILayout.TextField(mapEditorIndexStorages.groupIndex.ToString(), GUILayout.Width(50));
+            int.TryParse(groupIndexString, out mapEditorIndexStorages.groupIndex);
+
+            if (GUILayout.Button("►", GUILayout.Width(30)))
+            {
+                mapEditorIndexStorages.groupIndex++;
+                MapManager.Instance.SetRouteCount();
+            }
+            GUILayout.FlexibleSpace();
+            GUILayout.EndHorizontal();
+
+            GUILayout.BeginHorizontal();
+            GUILayout.FlexibleSpace();
+            GUILayout.Label("Waypoint Index: ");
+
+            if (GUILayout.Button("◄", GUILayout.Width(30)))
+            {
+                mapEditorIndexStorages.wayPointIndex--;
+            }
+            
+            string wayPointIndexString = GUILayout.TextField(mapEditorIndexStorages.wayPointIndex.ToString(), GUILayout.Width(50));
+            int.TryParse(wayPointIndexString, out mapEditorIndexStorages.wayPointIndex);
+
+            if (GUILayout.Button("►", GUILayout.Width(30)))
+            {
+                mapEditorIndexStorages.wayPointIndex++;
+            }
+
+            if(mapEditorIndexStorages.wayPointIndex < 0)
+            {
+                mapEditorIndexStorages.wayPointIndex = 0;
+            }
+
+            if (mapEditorIndexStorages.groupIndex < 0)
+            {
+                mapEditorIndexStorages.groupIndex = 0;
+            }
+
+
+            MapManager.Instance.SetWayPointIndex(mapEditorIndexStorages.wayPointIndex);
+            MapManager.Instance.GetGroupIndex(mapEditorIndexStorages.groupIndex);
+            GUILayout.FlexibleSpace();
+            GUILayout.EndHorizontal();
         }
 
 
+        GUILayout.Space(20);
         // 로드할 맵 인덱스 선택
         GUILayout.Label("Load Map", EditorStyles.boldLabel);
         selectedMapIndex = EditorGUILayout.IntField("Map Index", selectedMapIndex);
@@ -114,21 +206,77 @@ public class MapEditorWindow : EditorWindow
         // 맵 초기화, 저장, 로드 버튼
         if (GUILayout.Button("Clear Map"))
         {
-            MapManager.Instance.ClearMap(); 
-            MapManager.Instance.ClearData();
+            MapManager.Instance.ClearMap();
+            waypointLabelInfos.Clear();
+
+            string clearInfo = "Clear Map";
+            ModifyData(clearInfo);
         }
 
         if (GUILayout.Button("Save Map"))
         {
             MapManager.Instance.SaveMapData(selectedMapIndex);
+            SetWaypointLabelInfos(MapManager.Instance.currentMapData.routes);
         }
 
         if (GUILayout.Button("Load Map"))
         {
             MapManager.Instance.ClearMap();
             MapManager.Instance.LoadMapData(selectedMapIndex);
+            SetWaypointLabelInfos(MapManager.Instance.currentMapData.routes);
+
+            string loadInfo = "Load Map";
+            ModifyData(loadInfo);
         }
+
+        mapEditorIndexStorages = (MapEditorIndexStorage)EditorGUILayout.ObjectField("Map Editor Index Storage",mapEditorIndexStorages,typeof(MapEditorIndexStorage),false);
+
+        if (mapEditorIndexStorages != null)
+        {
+            EditorGUILayout.LabelField("Group Index:", mapEditorIndexStorages.groupIndex.ToString());
+            EditorGUILayout.LabelField("WayPoint Index:", mapEditorIndexStorages.wayPointIndex.ToString());
+        }
+
+        mapEditorUndoStorages = (MapEditorUndoStorage)EditorGUILayout.ObjectField("Map Editor Undo Storage", mapEditorUndoStorages, typeof(MapEditorUndoStorage), false);
+
+        SceneView.RepaintAll();
+        
     }
+
+    private void SetWaypointLabelInfos(List<Route> routes)
+    {
+        waypointLabelInfos.Clear();
+        routes.ForEach(r => {
+            var labelInfo = new LabelInfo();
+            waypointLabelInfos.Add(labelInfo);
+            r.waypointCoordinates.ForEach(w => labelInfo.labelPosition.Add(w));
+        });
+    }
+
+    public void ModifyData(string info)
+    {
+        Undo.RegisterCompleteObjectUndo(mapEditorUndoStorages, $"{info}");
+        mapEditorUndoStorages.mapdata = MapManager.Instance.currentMapData.Clone();
+        EditorUtility.SetDirty(mapEditorUndoStorages);
+    }
+
+    public void UndoData()
+    {
+        //MapManager.Instance.InitializeMap(MapManager.Instance.currentMapData);
+
+        MapManager.Instance.currentMapData = mapEditorUndoStorages.mapdata.Clone();
+
+        if (MapManager.Instance.objectParent.childCount > 0)
+        {
+            for (var i = MapManager.Instance.objectParent.childCount - 1; i >= 0; i--)
+            {
+                DestroyImmediate(MapManager.Instance.objectParent.GetChild(i).gameObject);
+            }
+        }
+
+        MapManager.Instance.DrawMap();
+    }
+
 
     private void OnSceneGUI(SceneView sceneView)
     {
@@ -142,24 +290,53 @@ public class MapEditorWindow : EditorWindow
             }
         }
 
+        Tools.current = Tool.None;
+
         DrawGrid(); // 그리드 그리기
         DrawMapBoundary(); // 맵 경계 그리기
         DrawGridCoordinates(); // 그리드 좌표 표시
 
         HandleUtility.AddDefaultControl(GUIUtility.GetControlID(FocusType.Passive));
 
-        Event e = Event.current;
+        UpdateInput();
 
+        if (MapManager.Instance.routes.Count < mapEditorIndexStorages.groupIndex + 1)
+        {
+            for (var i = 0; i < mapEditorIndexStorages.groupIndex - MapManager.Instance.routes.Count + 1; i++)
+            {
+                Route route = new Route();
+
+                MapManager.Instance.routes.Add(route);
+            }
+        }
+
+        DrawWaypointLines();
+        DrawWayPointLabels();
+
+        Repaint();
+    }
+
+    private void UpdateInput()
+    {
+        Event e = Event.current;
+        GUIStyle style = new GUIStyle()
+        {
+            fontSize = 15,
+            fontStyle = FontStyle.Bold
+        };
+        style.normal.textColor = Color.white;
         // Ctrl + Z를 누르면 Undo 실행
         if (e.type == EventType.KeyDown && e.control && e.keyCode == KeyCode.Z)
         {
             Undo.PerformUndo();
+            UndoData();
             e.Use();
         }
         // Ctrl + Y를 누르면 Redo 실행
         else if (e.type == EventType.KeyDown && e.control && e.keyCode == KeyCode.Y)
         {
             Undo.PerformRedo();
+            UndoData();
             e.Use();
         }
         // 마우스 클릭 또는 드래그 이벤트 처리
@@ -172,27 +349,53 @@ public class MapEditorWindow : EditorWindow
             {
                 Vector3 point = ray.GetPoint(distance);
                 point = SnapToGrid(point, snapValue); // 스냅 적용
+                int x = Mathf.FloorToInt(point.x / MapManager.Instance.gridSize);
+                int y = Mathf.FloorToInt(point.z / MapManager.Instance.gridSize);
                 if (addingWaypoint)
                 {
-                    int x = Mathf.FloorToInt(point.x / MapManager.Instance.gridSize);
-                    int y = Mathf.FloorToInt(point.z / MapManager.Instance.gridSize);
+
+                    //그리드 밖 설치 리턴
+                    if (y < 0 || MapManager.Instance.currentMapData.verticalLines.Count <= y ||
+                        x < 0 || MapManager.Instance.currentMapData.verticalLines[y].horizontalLines.Count <= x)
+                        return;
 
                     Vector2Int newWaypoint = new Vector2Int(x, y);
 
-                    MapManager.Instance.AddWayPoint(newWaypoint, point,  wayPointIndex, groupIndex, MapManager.Instance.waypointPrefab , MapManager.Instance.waypointParent, true);
+                    //중복설치 리턴
+                    if (MapManager.Instance.routes[mapEditorIndexStorages.groupIndex].waypointCoordinates.Contains(newWaypoint))
+                        return;
+
+                    //오브젝트 추가
+                    MapManager.Instance.AddWayPoint(newWaypoint, point, MapManager.Instance.waypointPrefab, MapManager.Instance.waypointParent, true);
+
+                    if (waypointLabelInfos.Count <= mapEditorIndexStorages.groupIndex)
+                    {
+                        LabelInfo labelInfo = new LabelInfo();
+
+                        waypointLabelInfos.Add(labelInfo);
+                    }
+
+                    if (waypointLabelInfos[mapEditorIndexStorages.groupIndex].labelPosition.Count <= mapEditorIndexStorages.wayPointIndex)
+                    {
+                        waypointLabelInfos[mapEditorIndexStorages.groupIndex].labelPosition.Add(newWaypoint);
+                    }
 
 
-                    //MapManager.Instance.AddObject(point, MapManager.Instance.waypointPrefab, MapManager.Instance.waypointParent, StructureType.None, true);
                     e.Use();
                 }
                 else if (addingCube)
                 {
-                    MapManager.Instance.AddObject(point, MapManager.Instance.cubePrefab, MapManager.Instance.cubeParent, StructureType.Cube, true);
+                    MapManager.Instance.AddObject(point, MapManager.Instance.cubePrefab, MapManager.Instance.objectParent, StructureType.Cube, true);
+
+                    string addcubeInfo = $"Add Cube({x},{y})"; 
+
+                    ModifyData(addcubeInfo);
+
                     e.Use();
                 }
                 else if (addingEnemyRoad)
                 {
-                    MapManager.Instance.AddObject(point, MapManager.Instance.enemyRoadPrefab, MapManager.Instance.enemyRoadParent, StructureType.EnemyRoad, true);
+                    MapManager.Instance.AddObject(point, MapManager.Instance.enemyRoadPrefab, MapManager.Instance.objectParent, StructureType.EnemyRoad, true);
                     e.Use();
                 }
                 else if (deleteObejct)
@@ -202,62 +405,98 @@ public class MapEditorWindow : EditorWindow
                 }
             }
         }
+        else if (e.type == EventType.MouseUp && e.button == 1)
+        {
+            deleteObejct = false;
+        }
+        else if (e.type == EventType.MouseDown && e.button == 1)
+        { 
+            if (deleteObejct)
+                return;
 
-        //HandlePositionHandles(); // 오브젝트 이동 핸들 처리
+            deleteObejct = true;
+
+            Ray ray = HandleUtility.GUIPointToWorldRay(e.mousePosition);
+            Plane plane = new Plane(Vector3.up, Vector3.zero);
+
+            if (plane.Raycast(ray, out float distance))
+            {
+                Vector3 point = ray.GetPoint(distance);
+                point = SnapToGrid(point, snapValue);
+
+                MapManager.Instance.DeleteObject(point, false);
+
+
+                /*
+                 * 임시
+                 */
+                int x = Mathf.FloorToInt(point.x / MapManager.Instance.gridSize);
+                int y = Mathf.FloorToInt(point.z / MapManager.Instance.gridSize);
+
+                string deleteObjectInfo = $"delete {MapManager.Instance.currentMapData.verticalLines[y].horizontalLines[x]} {x},{y}";
+
+                ModifyData(deleteObjectInfo);
+                /*
+                * 임시
+                */
+
+                if (addingWaypoint)
+                {
+                    waypointLabelInfos.RemoveAt(mapEditorIndexStorages.groupIndex);
+
+                    LabelInfo labelInfo = new LabelInfo();
+
+                    waypointLabelInfos.Add(labelInfo);
+
+                    for (int i = 0; i < MapManager.Instance.routes[mapEditorIndexStorages.groupIndex].waypointCoordinates.Count; i++)
+                    {
+                        waypointLabelInfos[mapEditorIndexStorages.groupIndex].labelPosition.Add(MapManager.Instance.routes[mapEditorIndexStorages.groupIndex].waypointCoordinates[i]);
+                    }
+                }
+            }
+        }
     }
 
-
-
-    // 오브젝트 이동 핸들 처리 함수
-    private void HandlePositionHandles()
+    IEnumerator AddCube(Vector3 point)
     {
-        if(mapManager.Waypoints == null) return;
+        yield return new WaitForEndOfFrame();
+        MapManager.Instance.AddObject(point, MapManager.Instance.cubePrefab, MapManager.Instance.objectParent, StructureType.Cube, true);
 
-        var waypointCount = mapManager.Waypoints.Length;
-
-        for (int i = 0; i < waypointCount; i++)
+    }
+    private void DrawWaypointLines()
+    {
+        for (var y = 0; y < MapManager.Instance.routes.Count; y++)
         {
-            if (mapManager.Waypoints[i] != null)
+            for (var x = 1; x < MapManager.Instance.routes[y].waypointCoordinates.Count; x++)
             {
-                EditorGUI.BeginChangeCheck();
-                Vector3 newPos = Handles.PositionHandle(mapManager.Waypoints[i].position, Quaternion.identity);
-                newPos = SnapToGrid(newPos, snapValue); // 스냅 적용
-                if (EditorGUI.EndChangeCheck())
-                {
-                    Undo.RecordObject(mapManager.Waypoints[i], "Move Waypoint");
-                    mapManager.Waypoints[i].position = newPos;
-                }
+                float gridSize = mapManager.gridSize;
+
+                Vector2Int startInt = new Vector2Int(MapManager.Instance.routes[y].waypointCoordinates[x - 1].x, MapManager.Instance.routes[y].waypointCoordinates[x - 1].y);
+                Vector2Int EndInt = new Vector2Int(MapManager.Instance.routes[y].waypointCoordinates[x].x, MapManager.Instance.routes[y].waypointCoordinates[x].y);
+                Vector3 start = new Vector3(startInt.x * gridSize + 2, 0, startInt.y * gridSize + 2);
+                Vector3 end = new Vector3(EndInt.x * gridSize + 2, 0, EndInt.y * gridSize + 2);
+                Handles.color = GetGroupColor(y);
+                Handles.DrawLine(start, end);
             }
         }
+    }
 
-        for (int i = 0; i < mapManager.Cubes.Length; i++)
+    private void DrawWayPointLabels()
+    {
+        GUIStyle style = new GUIStyle()
         {
-            if (mapManager.Cubes[i] != null)
-            {
-                EditorGUI.BeginChangeCheck();
-                Vector3 newCubePos = Handles.PositionHandle(mapManager.Cubes[i].position, Quaternion.identity);
-                newCubePos = SnapToGrid(newCubePos, snapValue); // 스냅 적용
-                if (EditorGUI.EndChangeCheck())
-                {
-                    Undo.RecordObject(mapManager.Cubes[i], "Move Cube");
-                    mapManager.Cubes[i].position = newCubePos;
-                }
-            }
-        }
+            fontSize = 15,
+            fontStyle = FontStyle.Bold
+        };
 
-        for (int i = 0; i < mapManager.EnemyRoads.Length; i++)
+        style.normal.textColor = GetGroupColor(mapEditorIndexStorages.groupIndex);
+
+        for (var i = 0; i < MapManager.Instance.routes[mapEditorIndexStorages.groupIndex].waypointCoordinates.Count; i++)
         {
-            if (mapManager.EnemyRoads[i] != null)
-            {
-                EditorGUI.BeginChangeCheck();
-                Vector3 newEnemyRoadPos = Handles.PositionHandle(mapManager.EnemyRoads[i].position, Quaternion.identity);
-                newEnemyRoadPos = SnapToGrid(newEnemyRoadPos, snapValue); // 스냅 적용
-                if (EditorGUI.EndChangeCheck())
-                {
-                    Undo.RecordObject(mapManager.EnemyRoads[i], "Move Enemy Load");
-                    mapManager.EnemyRoads[i].position = newEnemyRoadPos;
-                }
-            }
+            Vector3 pos = new Vector3(MapManager.Instance.routes[mapEditorIndexStorages.groupIndex].waypointCoordinates[i].x * MapManager.Instance.gridSize + MapManager.Instance.gridSize / 2, 
+                0, MapManager.Instance.routes[mapEditorIndexStorages.groupIndex].waypointCoordinates[i].y * MapManager.Instance.gridSize + MapManager.Instance.gridSize / 2);
+
+            Handles.Label(pos, i.ToString(), style);
         }
     }
 
@@ -317,11 +556,9 @@ public class MapEditorWindow : EditorWindow
             for (float z = 0; z < mapManager.mapSize.y * mapManager.gridSize; z+= mapManager.gridSize)
             {
                 Vector3 position = new Vector3(x + gridSize / 2, 0, z + gridSize / 2);
-
-
                 Handles.Label(position, $"({(int)(x / gridSize)}, {(int)(z / gridSize)})", style);
             }
         }
-
+        
     }
 }

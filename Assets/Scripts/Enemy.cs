@@ -30,8 +30,6 @@ public class Enemy : MonoBehaviour
         if (MapManager.Instance != null && MapManager.Instance.waypointParent.childCount > 0)
         {
             targetTr = MapManager.Instance.waypointParent.GetChild(0);
-
-            //targetTr = MapManager.Instance.Waypoints[0];
         }
     }
 
