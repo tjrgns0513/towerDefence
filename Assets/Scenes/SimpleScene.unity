@@ -12789,8 +12789,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 7a94583de996def4da816bb6897b7f8d, type: 2}
   - {fileID: 11400000, guid: 0a3e451a0047de44ca20faa96d9546c6, type: 2}
   - {fileID: 11400000, guid: d3d6f4a961d48cc4e8264e5918ab0610, type: 2}
-  mapEditorIndexStorage: {fileID: 11400000, guid: 6844d63f725bb1940aad42bd50f52fb9, type: 2}
-  mapEditorUndoStorages: {fileID: 0}
+  editorIndex: {fileID: 11400000, guid: 6844d63f725bb1940aad42bd50f52fb9, type: 2}
   waypointParent: {fileID: 1494751242}
   objectParent: {fileID: 1951803222}
   waypointPrefab: {fileID: 6142913242073603950, guid: 260bc79f3b82a2d4781f54e4000e1d61, type: 3}
@@ -17326,6 +17325,6 @@ SceneRoots:
   - {fileID: 1972809082}
   - {fileID: 839804313}
   - {fileID: 786674029}
-  - {fileID: 1494751242}
   - {fileID: 1374021891}
   - {fileID: 1951803222}
+  - {fileID: 1494751242}

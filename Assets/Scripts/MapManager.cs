@@ -19,12 +19,10 @@ public class MapManager : MonoBehaviour
 {
     private static MapManager instance = null;
 
-    public List<MapData_ScriptableObject> mapManagerList;// = new List<MapData_ScriptableObject>(); // MapData 리스트로 맵 데이터 관리
+    public List<MapData_ScriptableObject> mapManagerList; // MapData 리스트로 맵 데이터 관리
 
-    public MapEditorIndexStorage mapEditorIndexStorage;
-    public MapEditorUndoStorage mapEditorUndoStorages;
+    public MapEditorIndexStorage editorIndex;
 
-    //public List<Route> routes = new List<Route>();
     public List<Route> routes => currentMapData.routes;
 
     public Transform waypointParent;
@@ -66,7 +64,6 @@ public class MapManager : MonoBehaviour
         }
 
         instance = this;
-
     }
 
     // 맵 초기화 함수
@@ -76,6 +73,8 @@ public class MapManager : MonoBehaviour
             return;
 
         mapData.verticalLines.Clear();
+
+        mapData.routes?.Clear();
 
         for (int y = 0; y < mapSize.y; y++)
         {
@@ -89,7 +88,7 @@ public class MapManager : MonoBehaviour
             mapData.verticalLines.Add(mapLayer);
         }
 
-        if(objectParent.childCount > 0)
+        if (objectParent.childCount > 0)
         {
             for(var i = objectParent.childCount - 1; i >= 0; i--)
             {
@@ -104,9 +103,6 @@ public class MapManager : MonoBehaviour
                 DestroyImmediate(waypointParent.GetChild(i).gameObject);
             }
         }
-
-        mapEditorIndexStorage.wayPointIndex = 0;
-        mapEditorIndexStorage.groupIndex = 0;
     }
 
     // 맵 데이터를 로드하는 함수
@@ -155,10 +151,21 @@ public class MapManager : MonoBehaviour
             }
         }
 
+        if (currentMapData.routes.Count <= 0)
+        {
+            editorIndex.wayPointIndex = 0;
+        }
+
         for (var i = 0; i < currentMapData.routes.Count; ++i)
         {
             var route = currentMapData.routes[i];
-            for (var j = 0; j < route.waypointCoordinates.Count; ++j)
+
+            int count = route.waypointCoordinates.Count;
+
+            editorIndex.groupIndex = i;
+            editorIndex.wayPointIndex = 0;
+
+            for (var j = 0; j < count; ++j)
             {
                 var waypoint = route.waypointCoordinates[j];
                 var position = CalcPosition(waypoint.x, waypoint.y);
@@ -223,62 +230,60 @@ public class MapManager : MonoBehaviour
         int x = Mathf.FloorToInt(position.x / gridSize);
         int y = Mathf.FloorToInt(position.z / gridSize);
 
-        //맵사이즈 의외에 설치시 return
-        if (y < 0 || mapData.verticalLines.Count <= y || 
-            x < 0 || mapData.verticalLines[y].horizontalLines.Count <= x)
+        //설치하려는 위치에 큐브가 있다면 return
+        if (mapData.verticalLines[y].horizontalLines[x] == StructureType.Cube)
             return;
 
         EnsureRoutesSize();
 
-        if (GetWayPointCount(mapEditorIndexStorage.groupIndex) > mapEditorIndexStorage.wayPointIndex)
+        if (GetWayPointCount(editorIndex.groupIndex) > editorIndex.wayPointIndex)
         {
-            if (routes[mapEditorIndexStorage.groupIndex].waypointCoordinates[mapEditorIndexStorage.wayPointIndex] != null)
+            if (routes[editorIndex.groupIndex].waypointCoordinates[editorIndex.wayPointIndex] != null)
             {
-                if (waypointParent.childCount > 0)
-                {
-                    //for (var i = waypointParent.childCount - 1; i >= 0; i--)
-                    //{
-                    //    DestroyImmediate(waypointParent.GetChild(i).gameObject);
-                    //}
-                }
-
-                //var vector2Int = new Vector2Int(x, y);
-
-                //routes[mapEditorIndexStorage.groupIndex].waypointCoordinates[mapEditorIndexStorage.wayPointIndex] = vector2Int;
-
-                //for(var groupIdx = 0; groupIdx < routes.Count; groupIdx++ )
-                //{
-                    //for (var i = 0; i < routes[groupIdx].waypointCoordinates.Count; i++)
-                    //{
-                        //var wayX = Mathf.FloorToInt(routes[groupIdx].waypointCoordinates[i].x);
-                        //var wayY = Mathf.FloorToInt(routes[groupIdx].waypointCoordinates[i].y);
-
-                        //var ResetPosition = CalcPosition(wayX, wayY);
-
-                        //GameObject obj1 = Instantiate(waypointPrefab, ResetPosition, Quaternion.identity, waypointParent);
-                        GameObject obj1 = Instantiate(waypointPrefab, position, Quaternion.identity, waypointParent);
-
-                        obj1.name = ($"{waypointPrefab.name}");
-                    //}
-                //}
-
+                editorIndex.wayPointIndex++;
+                position.y = 1f;
+                GameObject obj1 = Instantiate(waypointPrefab, position, Quaternion.identity, waypointParent);
+                obj1.name = ($"{waypointPrefab.name}");
                 return;
             }
         }
 
-        if (routes[mapEditorIndexStorage.groupIndex].waypointCoordinates.Contains(waypoint))
+        //대각선 설치 안되게 확인
+        if (DiagonalBlock(position) == false)
         {
-            return;
+            routes[editorIndex.groupIndex].waypointCoordinates.Add(waypoint);
+            editorIndex.wayPointIndex++;
+            position.y = 1f;
+            GameObject obj = Instantiate(prefabs, position, Quaternion.identity, parent);
+            obj.name = ($"{prefabs.name}");
         }
-        else
+    }
+
+    private bool DiagonalBlock(Vector3 position)
+    {
+        bool isBlock = false;
+
+        var waypointPos = routes[editorIndex.groupIndex].waypointCoordinates;
+
+        if (waypointPos.Count > 0)
         {
-            routes[mapEditorIndexStorage.groupIndex].waypointCoordinates.Add(waypoint);
-            mapEditorIndexStorage.wayPointIndex++;
+            var x = Mathf.FloorToInt(position.x / gridSize);
+            var y = Mathf.FloorToInt(position.z / gridSize);
+
+            Vector2Int pos = waypointPos[editorIndex.wayPointIndex - 1];
+            Vector2Int pos2 = new Vector2Int(x, y);
+
+            if (pos.x == pos2.x || pos.y == pos2.y)
+                isBlock = false;
+            else
+            {
+                isBlock = true;
+                Debug.LogWarning("Waypoints cannot be installed diagonally");
+            }
+                
         }
 
-        //오브젝트 생성
-        GameObject obj = Instantiate(prefabs, position, Quaternion.identity, parent);
-        obj.name = ($"{prefabs.name}");
+        return isBlock;
     }
 
     public int GetWayPointCount(int groupIdx)
@@ -310,14 +315,14 @@ public class MapManager : MonoBehaviour
 
         var wayPointCopyList = new Vector2Int(x, y);
 
-        for(var i = 0; i < routes[mapEditorIndexStorage.groupIndex].waypointCoordinates.Count; i++)
+        for(var i = 0; i < routes[editorIndex.groupIndex].waypointCoordinates.Count; i++)
         {
-            if(routes[mapEditorIndexStorage.groupIndex].waypointCoordinates[i] == wayPointCopyList)
+            if(routes[editorIndex.groupIndex].waypointCoordinates[i] == wayPointCopyList)
             {
-                routes[mapEditorIndexStorage.groupIndex].waypointCoordinates.Remove
-            (routes[mapEditorIndexStorage.groupIndex].waypointCoordinates[i]);
+                routes[editorIndex.groupIndex].waypointCoordinates.Remove
+            (routes[editorIndex.groupIndex].waypointCoordinates[i]);
 
-                mapEditorIndexStorage.wayPointIndex--;
+                editorIndex.wayPointIndex--;
             }
         }
 
@@ -401,7 +406,7 @@ public class MapManager : MonoBehaviour
     public void ClearMap()
     {
         InitializeMap(currentMapData);
-        routes.Clear();
+        //routes.Clear();
     }
 
     // 맵 데이터를 저장하는 함수
@@ -437,24 +442,24 @@ public class MapManager : MonoBehaviour
 
     public void SetWayPointIndex(int index)
     {
-        mapEditorIndexStorage.wayPointIndex = index;
+        editorIndex.wayPointIndex = index;
     }
 
     public void GetGroupIndex(int index)
     {
-        mapEditorIndexStorage.groupIndex = index;
+        editorIndex.groupIndex = index;
     }
 
     public void SetRouteCount()
     {
         EnsureRoutesSize();
 
-        mapEditorIndexStorage.wayPointIndex = routes[mapEditorIndexStorage.groupIndex].waypointCoordinates.Count;
+        editorIndex.wayPointIndex = routes[editorIndex.groupIndex].waypointCoordinates.Count;
     }
 
     public void EnsureRoutesSize()
     {
-        if (routes.Count <= mapEditorIndexStorage.groupIndex)
+        if (routes.Count <= editorIndex.groupIndex)
         {
             Route route = new Route();
             routes.Add(route);
