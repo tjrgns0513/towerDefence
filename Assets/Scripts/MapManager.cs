@@ -406,6 +406,8 @@ public class MapManager : MonoBehaviour
     public void ClearMap()
     {
         InitializeMap(currentMapData);
+        editorIndex.wayPointIndex = 0;
+        editorIndex.groupIndex = 0;
         //routes.Clear();
     }
 

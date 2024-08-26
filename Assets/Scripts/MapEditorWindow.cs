@@ -113,9 +113,6 @@ public class MapEditorWindow : EditorWindow
             mapManager.ClearMap();
             waypointLabelInfos.Clear();
 
-            editorIndex.wayPointIndex = 0;
-            editorIndex.groupIndex = 0;
-
             string clearInfo = "Clear Map";
             ModifyData(clearInfo);
         }
@@ -139,87 +136,67 @@ public class MapEditorWindow : EditorWindow
 
     private void DrawEditMode()
     {
-        addingCube = GUILayout.Toggle(addingCube, "Edit Cube Mode", "Button");
-        if (addingCube)
+        DrawToggle("Edit Cube Mode", ref addingCube, () => ResetOtherModes(ref addingWaypoint, ref addingEnemyRoad));
+        DrawToggle("Edit Enemy Road Mode", ref addingEnemyRoad, () => ResetOtherModes(ref addingWaypoint, ref addingCube));
+        DrawToggle("Edit Waypoint Mode", ref addingWaypoint, () => ResetOtherModes(ref addingEnemyRoad, ref addingCube));
+        if(addingWaypoint)
+            DrawIndex();
+    }
+
+    private void DrawToggle(string label, ref bool toggle, Action onToggleOn)
+    {
+        if(GUILayout.Toggle(toggle, label, "Button") != toggle)
         {
-            addingWaypoint = false;
-            addingEnemyRoad = false;
+            toggle = !toggle;
+            if (toggle) onToggleOn.Invoke();
+        }
+    }
+
+    private void ResetOtherModes(ref bool mode1, ref bool mode2)
+    {
+        mode1 = false;
+        mode2 = false;
+    }
+
+    private void DrawIndex()
+    {
+        DrawIndexControl("Group Index: ", ref editorIndex.groupIndex, () => mapManager.SetRouteCount());
+        DrawIndexControl("Waypoint Index: ", ref editorIndex.wayPointIndex, () => mapManager.SetWayPointIndex(editorIndex.wayPointIndex));
+        mapManager.GetGroupIndex(editorIndex.groupIndex);
+    }
+
+    private void DrawIndexControl(string label, ref int index, Action onIndexChange)
+    {
+        GUILayout.BeginHorizontal();
+        GUILayout.FlexibleSpace();
+
+        if(label == "Group Index: ")
+        {
+            GUILayout.Space(20);
+        }
+        
+        GUILayout.Label(label);
+
+        if (GUILayout.Button("◄", GUILayout.Width(30)))
+        {
+            index = Mathf.Max(0, --index);
+            onIndexChange.Invoke();
         }
 
-        addingEnemyRoad = GUILayout.Toggle(addingEnemyRoad, "Edit Enemy Road Mode", "Button");
-        if (addingEnemyRoad)
+        string indexString = GUILayout.TextField(index.ToString(), GUILayout.Width(50));
+        if (int.TryParse(indexString, out int parsedIndex))
         {
-            addingWaypoint = false;
-            addingCube = false;
+            index = Mathf.Max(0, parsedIndex);
         }
 
-        addingWaypoint = GUILayout.Toggle(addingWaypoint, "Edit Waypoint Mode", "Button");
-        if (addingWaypoint)
+        if (GUILayout.Button("►", GUILayout.Width(30)))
         {
-            addingCube = false;
-            addingEnemyRoad = false;
-
-            GUILayout.BeginHorizontal();
-            GUILayout.FlexibleSpace();
-            GUILayout.Label("      Group Index: ");
-
-            if (GUILayout.Button("◄", GUILayout.Width(30)))
-            {
-                editorIndex.groupIndex--;
-
-                if (editorIndex.groupIndex < 0)
-                {
-                    editorIndex.groupIndex = 0;
-                }
-
-                mapManager.SetRouteCount();
-            }
-
-            string groupIndexString = GUILayout.TextField(editorIndex.groupIndex.ToString(), GUILayout.Width(50));
-            int.TryParse(groupIndexString, out editorIndex.groupIndex);
-
-            if (GUILayout.Button("►", GUILayout.Width(30)))
-            {
-                editorIndex.groupIndex++;
-                mapManager.SetRouteCount();
-            }
-            GUILayout.FlexibleSpace();
-            GUILayout.EndHorizontal();
-
-            GUILayout.BeginHorizontal();
-            GUILayout.FlexibleSpace();
-            GUILayout.Label("Waypoint Index: ");
-
-            if (GUILayout.Button("◄", GUILayout.Width(30)))
-            {
-                editorIndex.wayPointIndex--;
-            }
-
-            string wayPointIndexString = GUILayout.TextField(editorIndex.wayPointIndex.ToString(), GUILayout.Width(50));
-            int.TryParse(wayPointIndexString, out editorIndex.wayPointIndex);
-
-            if (GUILayout.Button("►", GUILayout.Width(30)))
-            {
-                editorIndex.wayPointIndex++;
-            }
-
-            if (editorIndex.wayPointIndex < 0)
-            {
-                editorIndex.wayPointIndex = 0;
-            }
-
-            if (editorIndex.groupIndex < 0)
-            {
-                editorIndex.groupIndex = 0;
-            }
-
-
-            mapManager.SetWayPointIndex(editorIndex.wayPointIndex);
-            mapManager.GetGroupIndex(editorIndex.groupIndex);
-
-            GUILayout.FlexibleSpace();
-            GUILayout.EndHorizontal();
+            index++;
+            onIndexChange.Invoke();
         }
+
+        GUILayout.FlexibleSpace();
+        GUILayout.EndHorizontal();
     }
 
     private void DrawMapSize()
@@ -477,11 +454,12 @@ public class MapEditorWindow : EditorWindow
             for (var x = 1; x < mapManager.routes[y].waypointCoordinates.Count; x++)
             {
                 float gridSize = mapManager.gridSize;
+                var waypointPos = mapManager.routes[y].waypointCoordinates;
 
-                Vector2Int startInt = new Vector2Int(mapManager.routes[y].waypointCoordinates[x - 1].x, mapManager.routes[y].waypointCoordinates[x - 1].y);
-                Vector2Int EndInt = new Vector2Int(mapManager.routes[y].waypointCoordinates[x].x, mapManager.routes[y].waypointCoordinates[x].y);
-                Vector3 start = new Vector3(startInt.x * gridSize + 2, 0, startInt.y * gridSize + 2);
-                Vector3 end = new Vector3(EndInt.x * gridSize + 2, 0, EndInt.y * gridSize + 2);
+                Vector2Int startInt = new (waypointPos[x - 1].x, waypointPos[x - 1].y);
+                Vector2Int EndInt = new (waypointPos[x].x, waypointPos[x].y);
+                Vector3 start = new (startInt.x * gridSize + 2, 0, startInt.y * gridSize + 2);
+                Vector3 end = new (EndInt.x * gridSize + 2, 0, EndInt.y * gridSize + 2);
                 Handles.color = GetGroupColor(y);
                 Handles.DrawLine(start, end);
             }
@@ -600,4 +578,5 @@ public class MapEditorWindow : EditorWindow
         }
         
     }
+
 }

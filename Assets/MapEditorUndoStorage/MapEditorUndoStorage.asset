@@ -19,5 +19,4 @@ MonoBehaviour:
     - horizontalLines: 0000000000000000000000000000000000000000
     - horizontalLines: 0000000000000000000000000000000000000000
     - horizontalLines: 0000000000000000000000000000000000000000
-    routes:
-    - waypointCoordinates: []
+    routes: []
