@@ -278,7 +278,7 @@ public class MapManager : MonoBehaviour
             else
             {
                 isBlock = true;
-                Debug.LogWarning("Waypoints cannot be installed diagonally");
+                Debug.LogError("Waypoints cannot be installed diagonally");
             }
                 
         }
